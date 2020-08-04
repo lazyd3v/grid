@@ -181,6 +181,7 @@ export interface GridProps {
    * Change selected sheet
    */
   onChangeSelectedSheet?: (id: SheetID) => void;
+  onCopy?: (selections: SelectionArea[]) => void;
 }
 
 export interface RowColSelection {
@@ -298,7 +299,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       columnHeaderHeight = COLUMN_HEADER_HEIGHT,
       gridLineColor,
       sheetName,
-      onChangeSelectedSheet
+      onChangeSelectedSheet,
+      onCopy
     } = props;
 
     const gridRef = useRef<GridRef | null>(null);
@@ -735,7 +737,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       getValue: getValue,
       getText: getDisplayText,
       onPaste,
-      onCut
+      onCut,
+      onCopy
     });
 
     const handleChangeFilter = useCallback(

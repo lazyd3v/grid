@@ -93,6 +93,7 @@ export enum ACTION_TYPE {
   INSERT_ROW = "INSERT_ROW",
   REMOVE_CELLS = "REMOVE_CELLS",
   PASTE = "PASTE",
+  COPY = "COPY",
   REPLACE_SHEETS = "REPLACE_SHEETS",
   VALIDATION_SUCCESS = "VALIDATION_SUCCESS",
   SHOW_SHEET = "SHOW_SHEET",
@@ -192,6 +193,7 @@ export type ActionTypes =
       undoable?: boolean;
     }
   | { type: ACTION_TYPE.MERGE_CELLS; id: SheetID; undoable?: boolean }
+  | { type: ACTION_TYPE.COPY; id: SheetID; undoable?: boolean }
   | {
       type: ACTION_TYPE.FROZEN_ROW_CHANGE;
       id: SheetID;
@@ -994,6 +996,7 @@ export const createStateReducer = ({
               sheet => sheet.id === action.id
             ) as Sheet;
             if (sheet) {
+              const { selections } = sheet;
               const { rows, activeCell, selection } = action;
               const { rowIndex, columnIndex } = activeCell;
               const { cells } = sheet;
@@ -1031,6 +1034,19 @@ export const createStateReducer = ({
 
               /* Keep reference of active cell, so we can focus back */
               draft.currentActiveCell = activeCell;
+              draft.currentSelections = selections;
+            }
+            break;
+          }
+
+          case ACTION_TYPE.COPY: {
+            const sheet = draft.sheets.find(
+              sheet => sheet.id === action.id
+            ) as Sheet;
+            if (sheet) {
+              const { activeCell, selections } = sheet;
+              draft.currentActiveCell = activeCell;
+              draft.currentSelections = selections;
             }
             break;
           }

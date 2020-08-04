@@ -37,6 +37,10 @@ export interface CopyProps {
    * When user tries to cut a selection
    */
   onCut?: (selection: SelectionArea) => void;
+  /**
+   * Callback on copy event
+   */
+  onCopy?: (selection: SelectionArea[]) => void;
 }
 
 export interface CopyResults {
@@ -63,6 +67,7 @@ const useCopyPaste = ({
   gridRef,
   onPaste,
   onCut,
+  onCopy,
   getText = defaultGetText
 }: CopyProps): CopyResults => {
   const selectionRef = useRef({ selections, activeCell, getValue });
@@ -107,7 +112,8 @@ const useCopyPaste = ({
         return;
       }
       /* Only copy the last selection */
-      const { bounds } = currentSelections();
+      const selection = currentSelections();
+      const { bounds } = selection;
       const { top, left, right, bottom } = bounds;
       const rows = [];
       const cells = [];
@@ -132,6 +138,8 @@ const useCopyPaste = ({
       e.clipboardData?.setData(MimeType.csv, csv);
       e.clipboardData?.setData(MimeType.json, JSON.stringify(cells));
       e.preventDefault();
+
+      onCopy?.([selection]);
     },
     [currentSelections]
   );

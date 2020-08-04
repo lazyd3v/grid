@@ -91,6 +91,7 @@ export interface WorkbookProps
     selection?: SelectionArea
   ) => void;
   onCut?: (id: SheetID, selection: SelectionArea) => void;
+  onCopy?: (id: SheetID, selections: SelectionArea[]) => void;
   onInsertRow?: (
     id: SheetID,
     cell: CellInterface | null,
@@ -188,7 +189,8 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
       rowHeaderWidth,
       columnHeaderHeight,
       gridLineColor,
-      gridBackgroundColor
+      gridBackgroundColor,
+      onCopy
     } = props;
 
     const { colorMode } = useColorMode();
@@ -258,6 +260,10 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
 
     const handlePaste = useCallback((rows, activeCell, cutSelections) => {
       onPaste?.(selectedSheetRef.current, rows, activeCell, cutSelections);
+    }, []);
+
+    const handleCopy = useCallback(selections => {
+      onCopy?.(selectedSheetRef.current, selections);
     }, []);
 
     const handleCut = useCallback((selection: SelectionArea) => {
@@ -381,6 +387,7 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
             hiddenColumns={hiddenColumns}
             onPaste={handlePaste}
             onCut={handleCut}
+            onCopy={handleCopy}
             onInsertRow={handleInsertRow}
             onInsertColumn={handleInsertColumn}
             onDeleteRow={handleDeleteRow}

@@ -1561,6 +1561,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       []
     );
 
+    const handleCopy = useCallback(
+      (id: SheetID, selections: SelectionArea[]) => {
+        dispatch({
+          type: ACTION_TYPE.COPY,
+          id
+        });
+      },
+      []
+    );
+
     /**
      * Handle cut event
      */
@@ -1909,6 +1919,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onCut={handleCut}
+            onCopy={handleCopy}
             onInsertRow={handleInsertRow}
             onInsertColumn={handleInsertColumn}
             onDeleteRow={handleDeleteRow}
