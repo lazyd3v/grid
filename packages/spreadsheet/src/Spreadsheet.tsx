@@ -924,7 +924,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           dispatch({
             type: ACTION_TYPE.UPDATE_CELLS,
             changes: values,
-            undoable: false,
           });
         }
       },
@@ -942,7 +941,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           dispatch({
             type: ACTION_TYPE.UPDATE_CELLS,
             changes: values,
-            undoable: false,
           });
         }
       },
