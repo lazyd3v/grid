@@ -3,9 +3,9 @@ import {
   ACTION_TYPE,
   StateInterface,
   ActionTypes,
-} from "../src/state";
-import { initialState } from "./../src/Spreadsheet";
-import { createNewSheet } from "../src";
+} from "./state";
+import { initialState } from "./Spreadsheet";
+import { createNewSheet } from ".";
 import { CellsBySheet } from "@rowsncolumns/calc/dist/calc";
 
 type StateReducer = (

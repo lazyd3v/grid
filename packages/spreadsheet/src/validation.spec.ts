@@ -1,5 +1,5 @@
-import validate from "./../src/validation";
-import { CellConfig } from "../src/Spreadsheet";
+import validate from "./validation";
+import { CellConfig } from "./Spreadsheet";
 
 describe("validation", () => {
   it("exists", () => {

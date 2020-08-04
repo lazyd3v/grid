@@ -3,7 +3,7 @@ import SpreadSheet, { defaultSheets } from "./Spreadsheet";
 
 export default {
   title: "SpreadSheet",
-  component: SpreadSheet
+  component: SpreadSheet,
 };
 
 export const Default = () => {
@@ -15,9 +15,6 @@ export const Default = () => {
       onChangeCells={(sheet, changes) => {
         console.log("d", sheet, changes);
       }}
-      // calculationApi={(changes) => {
-
-      // }}
     />
   );
 };
