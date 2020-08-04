@@ -1,6 +1,6 @@
 {
   "name": "@rowsncolumns/spreadsheet",
-  "version": "3.10.25",
+  "version": "3.10.26",
   "main": "dist/index.js",
   "license": "Copyright Rows n' Columns",
   "scripts": {
@@ -20,8 +20,8 @@
     "@emotion/core": "^10.0.28",
     "@emotion/styled": "^10.0.27",
     "@juggle/resize-observer": "^3.2.0",
-    "@rowsncolumns/calc": "^2.3.9",
-    "@rowsncolumns/grid": "^5.5.6",
+    "@rowsncolumns/calc": "^2.3.10",
+    "@rowsncolumns/grid": "^5.5.7",
     "@types/react-list": "^0.8.5",
     "@types/webfontloader": "^1.6.32",
     "babel-plugin-emotion": "^10.0.33",
