@@ -3,10 +3,6 @@
   "exclude": ["node_modules"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "baseUrl": "src",
-    "paths": {
-      "test-utils": ["utils/test-utils.tsx"]
-    }
+    "outDir": "dist"
   }  
 }

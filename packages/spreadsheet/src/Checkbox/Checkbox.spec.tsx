@@ -1,5 +1,5 @@
 import React from "react";
-import { konvaRenderer, cleanup } from "test-utils";
+import { konvaRenderer, cleanup } from "./../utils/test-utils";
 import Checkbox from "./Checkbox";
 
 describe("Cell", () => {
