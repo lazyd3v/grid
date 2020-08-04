@@ -27,7 +27,7 @@ export const DEFAULT_HYPERLINK_COLOR = "#1155CC";
 // Should match SpreadSheet CellConfig
 export interface ParseResults {
   result?: React.ReactText | undefined | ResultArray;
-  formulatype?: DATATYPES;
+  effectiveType?: DATATYPES;
   error?: string;
   hyperlink?: string;
   errorMessage?: string;
@@ -75,7 +75,7 @@ class FormulaParser {
     this.formulaParser = new FastFormulaParser({
       functions: options?.functions,
       onCell: this.getCellValue,
-      onRange: this.getRangeValue
+      onRange: this.getRangeValue,
     });
     this.dependencyParser = new DepParser();
   }
@@ -95,10 +95,9 @@ class FormulaParser {
       this.currentValues?.[position.sheet]?.[position.row]?.[position.col] ??
       this.getValue?.(sheet, cell) ??
       null;
-
     if (config === null) return config;
-    if (config?.datatype === "formula" || !isNull(config?.formulatype)) {
-      return config?.formulatype === "number"
+    if (config?.datatype === "formula" || !isNull(config?.effectiveType)) {
+      return config?.effectiveType === "number"
         ? Number(castToString(config?.result) ?? "0")
         : config?.result;
     }
@@ -135,7 +134,7 @@ class FormulaParser {
     let hyperlink;
     let underline;
     let color;
-    let formulatype: DATATYPES | undefined;
+    let effectiveType: DATATYPES | undefined;
     try {
       result = await this.formulaParser
         .parseAsync(text, position, true)
@@ -154,14 +153,14 @@ class FormulaParser {
       if (!Array.isArray(result) && typeof result === "object") {
         // Hyperlink
         if (result?.datatype === "hyperlink") {
-          formulatype = result.datatype;
+          effectiveType = result.datatype;
           hyperlink = result.hyperlink;
           result = result.title || result.hyperlink;
           color = DEFAULT_HYPERLINK_COLOR;
           underline = true;
         }
       } else {
-        formulatype = detectDataType(result);
+        effectiveType = detectDataType(result);
       }
 
       if ((result as any) instanceof FormulaError) {
@@ -170,16 +169,16 @@ class FormulaParser {
       }
     } catch (err) {
       error = err.toString();
-      formulatype = "error";
+      effectiveType = "error";
     }
     return {
       result,
-      formulatype,
+      effectiveType,
       hyperlink,
       color,
       underline,
       error,
-      errorMessage
+      errorMessage,
     };
   };
   getDependencies = (

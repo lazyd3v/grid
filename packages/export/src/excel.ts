@@ -8,6 +8,7 @@ import ExcelJS, {
   CellHyperlinkValue,
   CellRichTextValue,
   ErrorValue,
+  CellSharedFormulaValue,
 } from "exceljs";
 import {
   Sheet,
@@ -86,11 +87,19 @@ export const getTypeFromDataType = (datatype: DATATYPES): number => {
 };
 
 /* Get text from cell */
-const getCellText = (cell: ExcelJS.Cell): string | undefined => {
+const getCellText = (
+  cell: ExcelJS.Cell,
+  sheet: ExcelJS.Worksheet
+): string | undefined => {
   switch (cell.type) {
     case ValueType.Null:
       return "";
     case ValueType.Formula:
+      const isSharedFormula = (cell.value as CellSharedFormulaValue)
+        .sharedFormula;
+      if (isSharedFormula) {
+        return `=${sheet.getCell(isSharedFormula).formula}`;
+      }
       return `=${(cell.value as CellFormulaValue).formula}`;
     case ValueType.Hyperlink: {
       const text = (cell.value as CellHyperlinkValue).text;
@@ -270,6 +279,10 @@ export const parseExcel = async ({
           /* Fill */
           const fillType = cell.style.fill;
           const datatype = getDataTypeFromType(cell.type);
+          const effectiveType =
+            datatype === "formula"
+              ? getDataTypeFromType(cell.effectiveType)
+              : void 0;
           const border = cell.style.border;
           if (fillType !== void 0 && cell.style.fill?.type === "pattern") {
             const fillValue = (cell.style
@@ -339,12 +352,16 @@ export const parseExcel = async ({
             }
           }
 
-          if (!isNull(value) && typeof value === "object") {
-            const result = (value as CellFormulaValue).result;
-            if (typeof result === "string") value = result;
+          let result;
+          if (datatype === "formula") {
+            result = (cell.value as CellFormulaValue).result as
+              | string
+              | number
+              | boolean
+              | Date
+              | undefined;
           }
-
-          const text = getCellText(cell);
+          const text = getCellText(cell, sheet);
           const attributes = getCellAttributes(cell);
 
           _sheet.cells[rowId][j] = {
@@ -352,6 +369,8 @@ export const parseExcel = async ({
             fill,
             color,
             datatype,
+            effectiveType,
+            result,
             ...strokes,
             ...fontConfig,
             ...attributes,

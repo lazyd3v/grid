@@ -5,7 +5,7 @@ import {
   CellRange,
   Functions,
   ParseResults,
-  CellPosition
+  CellPosition,
 } from "./parser";
 import { Dag, Node, DependencyMapping } from "./graph";
 import {
@@ -14,7 +14,7 @@ import {
   createPosition,
   detectDataType,
   castToString,
-  log
+  log,
 } from "./helpers";
 import merge from "lodash.merge";
 import FormulaError from "fast-formula-parser/formulas/error";
@@ -42,7 +42,7 @@ class CalcEngine {
   mapping: DependencyMapping;
   constructor(options?: CalcEngineOptions) {
     this.parser = new FormulaParser(options);
-    this.dag = new Dag<Node>(node => node.children);
+    this.dag = new Dag<Node>((node) => node.children);
     this.mapping = new DependencyMapping();
   }
 
@@ -120,7 +120,7 @@ class CalcEngine {
       log("Error parsing formula: ", formula, cell);
       changes[sheet][cell.rowIndex][cell.columnIndex] = {
         error,
-        errorMessage
+        errorMessage,
       };
       /* Remove all caches after calculation is complete */
       this.parser.clearCachedValues();
@@ -140,9 +140,9 @@ class CalcEngine {
     if (collides) {
       const collisionAddress = cellToAddress(collides as CellInterface);
       changes[sheet][cell.rowIndex][cell.columnIndex] = {
-        formulatype: "error",
+        effectiveType: "error",
         errorMessage: `Array result was not expanded because it would overwrite data in ${collisionAddress}`,
-        error: new FormulaError("#REF").toString()
+        error: new FormulaError("#REF").toString(),
       };
 
       /* Remove all caches after calculation is complete */
@@ -184,7 +184,7 @@ class CalcEngine {
         const { row, col, sheet } = dep as CellPosition;
         const address = cellToAddress({
           rowIndex: row,
-          columnIndex: col
+          columnIndex: col,
         }) as string;
         const cellNode = { rowIndex: row, columnIndex: col };
         const node = this.mapping.get(address, sheet, cellNode);
@@ -222,7 +222,7 @@ class CalcEngine {
     getValue: CellConfigGetter
   ): boolean | CellInterface => {
     const address = cellToAddress(cell);
-    if (result.formulatype === "array") {
+    if (result.effectiveType === "array") {
       const arrayResult = result.result as any[][];
       for (let i = 0; i < arrayResult.length; i++) {
         for (let j = 0; j < arrayResult[i].length; j++) {
@@ -231,7 +231,7 @@ class CalcEngine {
           }
           const currentCell = {
             rowIndex: cell.rowIndex + i,
-            columnIndex: cell.columnIndex + j
+            columnIndex: cell.columnIndex + j,
           };
           const currentConfig = getValue(sheet, currentCell);
           if (
@@ -261,7 +261,7 @@ class CalcEngine {
     if (!parentCell || !parentNode) {
       return changes;
     }
-    if (result.formulatype === "array") {
+    if (result.effectiveType === "array") {
       const array = result.result as any[][];
       const vLen = array.length;
       const hLen = array[0].length;
@@ -280,12 +280,12 @@ class CalcEngine {
             result: value,
             error: undefined,
             parentCell,
-            formulatype: detectDataType(value)
+            effectiveType: detectDataType(value),
           };
 
           const address = cellToAddress({
             rowIndex: row,
-            columnIndex: col
+            columnIndex: col,
           }) as string;
 
           const node = this.mapping.get(address, sheet, currentCell);
@@ -299,7 +299,7 @@ class CalcEngine {
       /* Add range */
       changes[sheet][cell.rowIndex][cell.columnIndex].formulaRange = [
         hLen,
-        vLen
+        vLen,
       ];
     } else {
       // @ts-ignore
@@ -334,7 +334,7 @@ class CalcEngine {
         const collisionAddress = cellToAddress(collides as CellInterface);
         changes[sheet][cell.rowIndex][cell.columnIndex] = {
           errorMessage: `Array result was not expanded because it would overwrite data in ${collisionAddress}`,
-          error: new FormulaError("#REF").toString()
+          error: new FormulaError("#REF").toString(),
         };
         return changes;
       }
@@ -359,7 +359,7 @@ class CalcEngine {
         for (const columnIndex in changes[sheet][rowIndex]) {
           const cell = {
             rowIndex: Number(rowIndex),
-            columnIndex: Number(columnIndex)
+            columnIndex: Number(columnIndex),
           };
           const config = getValue(sheet, cell);
           if (config === void 0) {
@@ -395,7 +395,7 @@ class CalcEngine {
             const formula = text.substr(1);
             const cell = {
               rowIndex: Number(rowIndex),
-              columnIndex: Number(columnIndex)
+              columnIndex: Number(columnIndex),
             };
             const cellAddress = cellToAddress(cell);
             if (!cellAddress) {
@@ -437,7 +437,7 @@ class CalcEngine {
                   const { row, col, sheet } = dep as CellPosition;
                   const address = cellToAddress({
                     rowIndex: row,
-                    columnIndex: col
+                    columnIndex: col,
                   }) as string;
                   const cell = { rowIndex: row, columnIndex: col };
                   const node = this.mapping.get(address, sheet, cell);

@@ -11,7 +11,7 @@ export interface CellConfig {
   /**
    * Used for formulas to indicate datatype of result
    */
-  formulatype?: DATATYPES;
+  effectiveType?: DATATYPES;
   /**
    * Formulas can extend range of a cell
    * When a cell with `range` is deleted, all cells within that range will be cleared
