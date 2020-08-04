@@ -938,11 +938,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const cellConfig = getValue(cell);
         const isValid = cellConfig?.valid ?? true;
         const datatype = cellConfig?.datatype;
-        const effectiveType = cellConfig?.effectiveType;
+        const resultType = cellConfig?.resultType;
         const hasError = !!cellConfig?.error;
         const hasTooltip = cellConfig?.tooltip;
         const isHyperLink =
-          datatype === "hyperlink" || effectiveType === "hyperlink";
+          datatype === "hyperlink" || resultType === "hyperlink";
         const showTooltip =
           isValid === false || hasError === true || isHyperLink || hasTooltip;
         if (!showTooltip) return null;

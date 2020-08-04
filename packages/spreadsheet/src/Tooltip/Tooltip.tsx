@@ -33,7 +33,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   variant = "info",
   content,
   datatype,
-  effectiveType,
+  resultType,
   result,
   hyperlink,
   text,
@@ -71,7 +71,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       onMouseLeave={onMouseLeave}
       onMouseEnter={onMouseEnter}
     >
-      {datatype === "hyperlink" || effectiveType === "hyperlink" ? (
+      {datatype === "hyperlink" || resultType === "hyperlink" ? (
         <HyperLink
           title={result ? castToString(result) : text}
           url={hyperlink}

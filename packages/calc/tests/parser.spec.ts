@@ -31,12 +31,10 @@ describe("parser", () => {
     expect((await formulaParser.parse("SUM(2,2)")).result).toBe(4);
     expect((await formulaParser.parse("SUM(A1,2)")).result).toBe(14);
     expect((await formulaParser.parse("SUM(A1:A3)")).result).toBe(36);
-    expect((await formulaParser.parse("SUM(A1:A3)")).effectiveType).toBe(
-      "number"
+    expect((await formulaParser.parse("SUM(A1:A3)")).resultType).toBe("number");
+    expect((await formulaParser.parse('CONCAT(A1, "hello")')).resultType).toBe(
+      "string"
     );
-    expect(
-      (await formulaParser.parse('CONCAT(A1, "hello")')).effectiveType
-    ).toBe("string");
     expect((await formulaParser.parse("SUM(Sheet:A1, A2)")).result).toBe(24);
     expect(
       (

@@ -27,7 +27,7 @@ export const DEFAULT_HYPERLINK_COLOR = "#1155CC";
 // Should match SpreadSheet CellConfig
 export interface ParseResults {
   result?: React.ReactText | undefined | ResultArray;
-  effectiveType?: DATATYPES;
+  resultType?: DATATYPES;
   error?: string;
   hyperlink?: string;
   errorMessage?: string;
@@ -96,8 +96,8 @@ class FormulaParser {
       this.getValue?.(sheet, cell) ??
       null;
     if (config === null) return config;
-    if (config?.datatype === "formula" || !isNull(config?.effectiveType)) {
-      return config?.effectiveType === "number"
+    if (config?.datatype === "formula" || !isNull(config?.resultType)) {
+      return config?.resultType === "number"
         ? Number(castToString(config?.result) ?? "0")
         : config?.result;
     }
@@ -134,7 +134,7 @@ class FormulaParser {
     let hyperlink;
     let underline;
     let color;
-    let effectiveType: DATATYPES | undefined;
+    let resultType: DATATYPES | undefined;
     try {
       result = await this.formulaParser
         .parseAsync(text, position, true)
@@ -153,14 +153,14 @@ class FormulaParser {
       if (!Array.isArray(result) && typeof result === "object") {
         // Hyperlink
         if (result?.datatype === "hyperlink") {
-          effectiveType = result.datatype;
+          resultType = result.datatype;
           hyperlink = result.hyperlink;
           result = result.title || result.hyperlink;
           color = DEFAULT_HYPERLINK_COLOR;
           underline = true;
         }
       } else {
-        effectiveType = detectDataType(result);
+        resultType = detectDataType(result);
       }
 
       if ((result as any) instanceof FormulaError) {
@@ -169,11 +169,11 @@ class FormulaParser {
       }
     } catch (err) {
       error = err.toString();
-      effectiveType = "error";
+      resultType = "error";
     }
     return {
       result,
-      effectiveType,
+      resultType,
       hyperlink,
       color,
       underline,

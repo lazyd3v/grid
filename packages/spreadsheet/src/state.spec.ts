@@ -99,13 +99,13 @@ describe("state reducers", () => {
           1: {
             text: "=A1:B2",
             datatype: "formula",
-            effectiveType: "array",
+            resultType: "array",
             formulaRange: [2, 2], // [spans 2 cells horizontally, span 2 cells vertically]
           },
           2: {
             text: "2",
             result: 2,
-            effectiveType: "number",
+            resultType: "number",
             parentCell: "A1",
           },
         },
@@ -142,7 +142,7 @@ describe("state reducers", () => {
           1: {
             text: '=HYPERLINK("Google", www.google.com)',
             datatype: "formula",
-            effectiveType: "hyperlink",
+            resultType: "hyperlink",
           },
         },
       },
@@ -152,7 +152,7 @@ describe("state reducers", () => {
       type: ACTION_TYPE.UPDATE_CELLS,
       changes,
     });
-    expect(newState.sheets[0].cells[1][1].effectiveType).toEqual("hyperlink");
+    expect(newState.sheets[0].cells[1][1].resultType).toEqual("hyperlink");
   });
 
   it("can update cells after validation", () => {

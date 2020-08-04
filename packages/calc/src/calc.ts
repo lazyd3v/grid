@@ -140,7 +140,7 @@ class CalcEngine {
     if (collides) {
       const collisionAddress = cellToAddress(collides as CellInterface);
       changes[sheet][cell.rowIndex][cell.columnIndex] = {
-        effectiveType: "error",
+        resultType: "error",
         errorMessage: `Array result was not expanded because it would overwrite data in ${collisionAddress}`,
         error: new FormulaError("#REF").toString(),
       };
@@ -222,7 +222,7 @@ class CalcEngine {
     getValue: CellConfigGetter
   ): boolean | CellInterface => {
     const address = cellToAddress(cell);
-    if (result.effectiveType === "array") {
+    if (result.resultType === "array") {
       const arrayResult = result.result as any[][];
       for (let i = 0; i < arrayResult.length; i++) {
         for (let j = 0; j < arrayResult[i].length; j++) {
@@ -261,7 +261,7 @@ class CalcEngine {
     if (!parentCell || !parentNode) {
       return changes;
     }
-    if (result.effectiveType === "array") {
+    if (result.resultType === "array") {
       const array = result.result as any[][];
       const vLen = array.length;
       const hLen = array[0].length;
@@ -280,7 +280,7 @@ class CalcEngine {
             result: value,
             error: undefined,
             parentCell,
-            effectiveType: detectDataType(value),
+            resultType: detectDataType(value),
           };
 
           const address = cellToAddress({

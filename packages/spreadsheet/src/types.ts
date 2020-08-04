@@ -85,7 +85,7 @@ export interface CellFormatting extends CellDataFormatting {
   /**
    * Used for formulas to indicate datatype of result
    */
-  effectiveType?: DATATYPES;
+  resultType?: DATATYPES;
   // formulatype?: DATATYPES; // Can be used for None, Master or Shared formula
   /**
    * Formulas can extend range of a cell

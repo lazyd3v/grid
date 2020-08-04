@@ -279,7 +279,7 @@ export const parseExcel = async ({
           /* Fill */
           const fillType = cell.style.fill;
           const datatype = getDataTypeFromType(cell.type);
-          const effectiveType =
+          const resultType =
             datatype === "formula"
               ? getDataTypeFromType(cell.effectiveType)
               : void 0;
@@ -369,7 +369,7 @@ export const parseExcel = async ({
             fill,
             color,
             datatype,
-            effectiveType,
+            resultType,
             result,
             ...strokes,
             ...fontConfig,
