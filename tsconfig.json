@@ -14,5 +14,5 @@
     "strictNullChecks": true,
     "sourceMap": true
   },
-  "exclude": ["node_modules", "packages/website", "packages/storybook", "*.config.js"]
+  "exclude": ["node_modules", "packages/website", "packages/storybook"]
 }

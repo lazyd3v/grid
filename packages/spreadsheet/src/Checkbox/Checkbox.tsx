@@ -10,7 +10,7 @@ export const CHECKBOX_ICON =
 export const CHECKBOX_CHECKED_ICON =
   "M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z";
 export interface CheckboxProps extends ShapeConfig {
-  checked: boolean;
+  checked?: boolean;
   rowIndex: number;
   columnIndex: number;
   onChange?: (cell: CellInterface, checked: boolean) => void;
@@ -22,7 +22,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
   y = 0,
   width = 0,
   height = 0,
-  checked,
+  checked = false,
   onChange,
   rowIndex,
   columnIndex,
