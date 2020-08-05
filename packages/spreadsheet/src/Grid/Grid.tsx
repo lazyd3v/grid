@@ -902,7 +902,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           return;
         }
         /* Switch to new sheet */
-        onChangeSelectedSheet?.(currentlyEditingSheetId.current);
+        if (isFormulaMode) {
+          onChangeSelectedSheet?.(currentlyEditingSheetId.current);
+        }
 
         /* Trigger onChange */
         onChange?.(currentlyEditingSheetId.current, value, cell);
@@ -930,7 +932,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         /* Switch off formula mode */
         setFormulaMode(false);
       },
-      [selectedSheet, scale, rowSizes]
+      [selectedSheet, scale, rowSizes, isFormulaMode]
     );
 
     const { tooltipComponent, ...tooltipProps } = useTooltip({

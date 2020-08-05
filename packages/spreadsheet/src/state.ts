@@ -312,7 +312,9 @@ export const createStateReducer = ({
       (draft) => {
         switch (action.type) {
           case ACTION_TYPE.SELECT_SHEET:
-            draft.selectedSheet = action.id;
+            if (action.id !== draft.selectedSheet) {
+              draft.selectedSheet = action.id;
+            }
             break;
 
           case ACTION_TYPE.CHANGE_SHEET_NAME: {

@@ -859,9 +859,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     /* Selected sheet */
     const setSelectedSheet = useCallback(
       (id: React.ReactText) => {
-        if (id === selectedSheet) {
-          return;
-        }
         dispatch({
           type: ACTION_TYPE.SELECT_SHEET,
           id,
