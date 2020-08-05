@@ -491,7 +491,8 @@ export const initialState: StateInterface = {
 
 /**
  * Spreadsheet component
- *
+ * TODO
+ * 1. Undo/redo on formula cells does not clear old formula cos of async nature
  * @param props
  */
 const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
@@ -566,8 +567,8 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     } = props;
 
     /* Last active cells: for undo, redo */
-    const lastActiveCellRef = useRef<CellInterface | null | undefined>(null);
-    const lastSelectionsRef = useRef<SelectionArea[] | null | undefined>([]);
+    const lastActiveCellRef = useRef<CellInterface | null>(null);
+    const lastSelectionsRef = useRef<SelectionArea[] | null>([]);
     const [scale, setScale] = useState(initialScale);
     const currentGrid = useRef<WorkbookGridRef>(null);
     const [formulaInput, setFormulaInput] = useState("");
@@ -606,6 +607,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       (state.selectedSheet ?? "") in sheetsById
         ? state.selectedSheet
         : sheets[0].id;
+    const selectedSheetRef = useRef<SheetID>();
 
     /**
      * Exit early if selected sheet is invalid
@@ -614,6 +616,11 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       selectedSheet !== void 0 && selectedSheet !== null,
       "Exception, selectedSheet is empty, Please specify a selected sheet using `selectedSheet` prop"
     );
+
+    /* So we can access sheet in closures */
+    useEffect(() => {
+      selectedSheetRef.current = selectedSheet;
+    }, [selectedSheet]);
 
     /* Keep a reference to previous state */
     useEffect(() => {
@@ -779,6 +786,15 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     }, []);
 
     /**
+     *
+     */
+    const patchHasCellChanges = useCallback((patches: Patch[]) => {
+      return patches.some((patch) => {
+        return patch.path[0] === "sheets" && patch.path?.[2] === "cells";
+      });
+    }, []);
+
+    /**
      * Undo hook
      */
     const {
@@ -800,11 +816,20 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           undoable: false,
         });
 
+        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
+          cellChangeCallback(
+            selectedSheetRef.current,
+            lastActiveCellRef.current,
+            lastSelectionsRef.current,
+            true
+          );
+        }
+
         if (lastActiveCellRef.current) {
-          currentGrid.current?.setActiveCell(lastActiveCellRef.current);
+          setActiveCell(lastActiveCellRef.current);
         }
         if (lastSelectionsRef.current) {
-          currentGrid.current?.setSelections(lastSelectionsRef.current);
+          setSelections(lastSelectionsRef.current);
         }
         /* Focus on the grid */
         if (enableGlobalKeyHandlers) currentGrid.current?.focus();
@@ -825,11 +850,21 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         const selectionsPatch = patches.find((item: Patch) =>
           item.path.includes("currentSelections")
         );
+
+        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
+          cellChangeCallback(
+            selectedSheetRef.current,
+            activeCellPatch?.value,
+            selectionsPatch?.value,
+            true
+          );
+        }
+
         if (activeCellPatch) {
-          currentGrid.current?.setActiveCell(activeCellPatch.value);
+          setActiveCell(activeCellPatch.value);
         }
         if (selectionsPatch) {
-          currentGrid.current?.setSelections(selectionsPatch.value);
+          setSelections(selectionsPatch.value);
         }
 
         /* Focus on the grid */
@@ -842,6 +877,18 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
      */
     const toast = useToast();
 
+    /* Update active cell: Imperatively */
+    const setActiveCell = useCallback((cell: CellInterface | null) => {
+      if (!cell) return;
+      currentGrid.current?.setActiveCell(cell);
+    }, []);
+
+    /* Update active selections: Imperatively */
+    const setSelections = useCallback((selections: SelectionArea[] | null) => {
+      if (!selections) return;
+      currentGrid.current?.setSelections(selections);
+    }, []);
+
     /**
      * Get cell bounds
      */
@@ -852,13 +899,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
 
     /* Last */
     useEffect(() => {
-      lastActiveCellRef.current = currentActiveCell;
-      lastSelectionsRef.current = currentSelections;
+      lastActiveCellRef.current = currentActiveCell ?? null;
+      lastSelectionsRef.current = currentSelections ?? null;
     }, [currentActiveCell, currentSelections]);
 
     /* Selected sheet */
     const setSelectedSheet = useCallback(
       (id: React.ReactText) => {
+        if (id === selectedSheetRef.current) {
+          return;
+        }
         dispatch({
           type: ACTION_TYPE.SELECT_SHEET,
           id,
@@ -918,8 +968,51 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
      * @param changes
      */
     const triggerBatchCalculation = useCallback(
-      async (sheet: SheetID, changes: CellsBySheet) => {
+      async (
+        sheet: string,
+        id: SheetID,
+        cell: CellInterface | null,
+        changes: CellsBySheet
+      ) => {
+        /**
+         * Simple trick to delay showing loading indicator
+         * If async results come too soon.
+         */
+        let receivedResponse = false;
+        let loadingShown = false;
+        const LOADING_INDICATOR_DELAY = 100;
+
+        if (cell) {
+          setTimeout(() => {
+            if (receivedResponse) {
+              return;
+            }
+            dispatch({
+              type: ACTION_TYPE.SET_LOADING,
+              id,
+              cell,
+              value: true,
+              undoable: false,
+            });
+
+            loadingShown = true;
+          }, LOADING_INDICATOR_DELAY);
+        }
         const values = await onCalculateBatch?.(sheet, changes);
+
+        /* Set flag to true so dont show loading indicator */
+        receivedResponse = true;
+
+        if (cell && loadingShown) {
+          dispatch({
+            type: ACTION_TYPE.SET_LOADING,
+            id,
+            cell,
+            value: false,
+            undoable: false,
+          });
+        }
+
         if (values !== void 0) {
           dispatch({
             type: ACTION_TYPE.UPDATE_CELLS,
@@ -1013,7 +1106,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         onChangeCell?.(id, value, cell);
 
         /* Validate */
-
         const validationResponse = await onValidate(value, id, cell, config);
 
         /* If validations service fails, lets not update the store */
@@ -1036,43 +1128,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           });
         }
 
-        /**
-         * Simple trick to delay showing loading indicator
-         * If async results come too soon.
-         */
-        let receivedResponse = false;
-        let loadingShown = false;
-        const LOADING_INDICATOR_DELAY = 100;
-
-        setTimeout(() => {
-          if (receivedResponse) {
-            return;
-          }
-          /* Trigger single calculation */
-          dispatch({
-            type: ACTION_TYPE.SET_LOADING,
-            id,
-            cell,
-            value: true,
-            undoable: false,
-          });
-
-          loadingShown = true;
-        }, LOADING_INDICATOR_DELAY);
-
-        await cellChangeCallback(id, cell);
-
-        receivedResponse = true;
-
-        if (loadingShown) {
-          dispatch({
-            type: ACTION_TYPE.SET_LOADING,
-            id,
-            cell,
-            value: false,
-            undoable: false,
-          });
-        }
+        cellChangeCallback(id, cell);
       },
       [disableFormula]
     );
@@ -1172,6 +1228,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         type: ACTION_TYPE.FORMATTING_CHANGE_AUTO,
         id: selectedSheet,
       });
+
+      const sheet = getSheetRef.current?.(selectedSheet);
+      if (sheet) {
+        cellChangeCallback(
+          selectedSheet,
+          sheet.activeCell,
+          sheet.selections,
+          true
+        );
+      }
     }, [selectedSheet]);
 
     /**
@@ -1182,6 +1248,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         type: ACTION_TYPE.FORMATTING_CHANGE_PLAIN,
         id: selectedSheet,
       });
+
+      const sheet = getSheetRef.current?.(selectedSheet);
+      if (sheet) {
+        cellChangeCallback(
+          selectedSheet,
+          sheet.activeCell,
+          sheet.selections,
+          true
+        );
+      }
     }, [selectedSheet]);
 
     /**
@@ -1197,6 +1273,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         });
 
         onFormattingChange?.(selectedSheet, key, value);
+
+        const sheet = getSheetRef.current?.(selectedSheet);
+        if (sheet) {
+          cellChangeCallback(
+            selectedSheet,
+            sheet.activeCell,
+            sheet.selections,
+            true
+          );
+        }
       },
       [selectedSheet]
     );
@@ -1332,15 +1418,17 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     const cellChangeCallback = useCallback(
       (
         id: SheetID,
-        activeCell: CellInterface,
-        selections?: SelectionArea[]
+        activeCell: CellInterface | null,
+        selections?: SelectionArea[] | null,
+        skipFormula: boolean = false
       ) => {
         const sheetName = getSheetRef.current?.(id)?.name;
+        const shouldRecalc = !disableFormula && !skipFormula;
         if (!sheetName) return;
         /**
          * If formula mode onChangeCells callback is empty, Skip
          */
-        if (!onChangeCells && disableFormula) {
+        if (!onChangeCells && !shouldRecalc) {
           return;
         }
         const sel =
@@ -1375,16 +1463,19 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
                     {};
                   cellChanges[rowIndex] = cellChanges[rowIndex] ?? {};
                   cellChanges[rowIndex][columnIndex] = cellConfig;
-                  changes[sheetName][rowIndex] =
-                    changes[sheetName][rowIndex] ?? {};
-                  changes[sheetName][rowIndex][columnIndex] = cellConfig;
+                  // Prevent unnecessary objects
+                  if (shouldRecalc) {
+                    changes[sheetName][rowIndex] =
+                      changes[sheetName][rowIndex] ?? {};
+                    changes[sheetName][rowIndex][columnIndex] = cellConfig;
+                  }
                 }
               }
             }
 
             /* Trigger Batch Calculation */
-            if (!disableFormula) {
-              await triggerBatchCalculation(sheetName, changes);
+            if (shouldRecalc) {
+              triggerBatchCalculation(sheetName, id, activeCell, changes);
             }
 
             /* OnChange cell */
@@ -1413,9 +1504,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
 
         onDeleteCells?.(id, activeCell, selections);
 
-        /**
-         * Using RAF such that calculation engine gets the right values from state
-         */
         cellChangeCallback(id, activeCell, selections);
       },
       []
@@ -1551,12 +1639,17 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           selection,
         });
 
-        /* Trigger callback */
+        /* Trigger callback and calculation */
         cellChangeCallback(
           id,
           activeCell,
           selection === void 0 ? void 0 : [selection]
         );
+
+        if (activeCell) {
+          const value = getCellConfigRef.current?.(id, activeCell)?.text;
+          handleActiveCellValueChange(id, activeCell, value);
+        }
 
         /* Should select */
         if (rowIndex === endRowIndex && columnIndex === endColumnIndex) return;

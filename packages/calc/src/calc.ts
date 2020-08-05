@@ -149,7 +149,7 @@ class CalcEngine {
     }
 
     /* Update results */
-    this.prepareResult(result, sheet, cell, changes);
+    this.prepareResult(formula, result, sheet, cell, changes);
 
     /**
      * Cache current value
@@ -252,6 +252,7 @@ class CalcEngine {
   };
 
   prepareResult = (
+    formula: string,
     result: ParseResults,
     sheet: Sheet,
     cell: CellInterface,
@@ -279,12 +280,21 @@ class CalcEngine {
           const col = cell.columnIndex + j;
           const currentCell = { rowIndex: row, columnIndex: col };
           changes[sheet][row] = changes[sheet][row] ?? {};
-          changes[sheet][row][col] = {
-            result: value,
-            error: undefined,
-            parentCell,
-            resultType: detectDataType(value),
-          };
+          if (i === 0 && j === 0) {
+            // Active formula cell
+            changes[sheet][row][col] = {
+              result: value,
+              resultType: detectDataType(value),
+              parentCell,
+              error: void 0,
+            };
+          } else {
+            changes[sheet][row][col] = {
+              text: value,
+              parentCell,
+              datatype: detectDataType(value),
+            };
+          }
 
           const address = cellToAddress({
             rowIndex: row,
@@ -293,10 +303,6 @@ class CalcEngine {
 
           const node = this.mapping.get(address, sheet, currentCell);
           node?.children.add(parentNode);
-
-          if (i !== 0 || j !== 0) {
-            changes[sheet][row][col].text = value;
-          }
         }
       }
       /* Add range */
@@ -327,6 +333,9 @@ class CalcEngine {
         Number(cell.columnIndex)
       );
       const formula = castToString(config?.text)?.substr(1) ?? null;
+      if (formula === null) {
+        continue;
+      }
       const result = await this.parser.parse(formula, position, getValue);
 
       /* Check collision in dependencies */
@@ -343,7 +352,7 @@ class CalcEngine {
       }
 
       /* Update results */
-      this.prepareResult(result, sheet, cell, changes);
+      this.prepareResult(formula, result, sheet, cell, changes);
 
       /* Cache current values so subsequent calculations can use the result */
       this.parser.cacheValues(changes);

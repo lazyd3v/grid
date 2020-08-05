@@ -312,9 +312,7 @@ export const createStateReducer = ({
       (draft) => {
         switch (action.type) {
           case ACTION_TYPE.SELECT_SHEET:
-            if (action.id !== draft.selectedSheet) {
-              draft.selectedSheet = action.id;
-            }
+            draft.selectedSheet = action.id;
             break;
 
           case ACTION_TYPE.CHANGE_SHEET_NAME: {
@@ -1016,6 +1014,11 @@ export const createStateReducer = ({
                     if (isNull(text)) {
                       continue;
                     }
+                    delete text?.formulaRange;
+                    delete text?.result;
+                    delete text?.parentCell;
+                    delete text?.resultType;
+
                     // TODO: Array formulas does not work well with copy/paste
                     // const { parentCell, ...config } = text as CellConfig;
                     cells[r][c] = text as CellConfig;
