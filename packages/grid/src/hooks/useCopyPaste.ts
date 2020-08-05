@@ -68,7 +68,7 @@ const useCopyPaste = ({
   onPaste,
   onCut,
   onCopy,
-  getText = defaultGetText
+  getText = defaultGetText,
 }: CopyProps): CopyResults => {
   const selectionRef = useRef({ selections, activeCell, getValue });
   const cutSelections = useRef<SelectionArea>();
@@ -123,7 +123,7 @@ const useCopyPaste = ({
         for (let j = left; j <= right; j++) {
           const config = selectionRef.current.getValue({
             rowIndex: i,
-            columnIndex: j
+            columnIndex: j,
           });
           const value = getText(config);
           cell.push(config);
@@ -154,7 +154,7 @@ const useCopyPaste = ({
       MimeType.json,
       MimeType.html,
       MimeType.csv,
-      MimeType.plain
+      MimeType.plain,
     ];
     let type;
     let value;
@@ -170,7 +170,7 @@ const useCopyPaste = ({
     if (/^text\/html/.test(type)) {
       const domparser = new DOMParser();
       const doc = domparser.parseFromString(value, type as SupportedType);
-      const supportedNodes = "table, p, h1, h2, h3, h4, h5, h6";
+      const supportedNodes = "table, p, span, h1, h2, h3, h4, h5, h6";
       const nodes = doc.querySelectorAll(supportedNodes);
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
@@ -193,6 +193,8 @@ const useCopyPaste = ({
       }
     } else if (type === MimeType.json) {
       rows = JSON.parse(value);
+    } else if (type === MimeType.plain) {
+      rows = [[value]];
     } else {
       const values = value.split("\n");
       for (const val of values) {
@@ -235,7 +237,7 @@ const useCopyPaste = ({
   return {
     copy: handleProgramaticCopy,
     paste: handleProgramaticPaste,
-    cut: handleCut
+    cut: handleCut,
   };
 };
 

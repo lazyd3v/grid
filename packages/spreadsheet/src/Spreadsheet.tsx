@@ -1063,7 +1063,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           loadingShown = true;
         }, LOADING_INDICATOR_DELAY);
 
-        await callBackOnCellValueModification(id, cell);
+        await cellChangeCallback(id, cell);
 
         receivedResponse = true;
 
@@ -1321,7 +1321,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         currentGrid.current?.focus();
 
         /* Trigger Formula */
-        callBackOnCellValueModification(id, activeCell, [fillSelection]);
+        cellChangeCallback(id, activeCell, [fillSelection]);
       },
       [sheets]
     );
@@ -1332,7 +1332,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
      * @param activeCell
      * @param selections
      */
-    const callBackOnCellValueModification = useCallback(
+    const cellChangeCallback = useCallback(
       (
         id: SheetID,
         activeCell: CellInterface,
@@ -1363,17 +1363,24 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           window.requestAnimationFrame(async () => {
             for (let i = 0; i < sel.length; i++) {
               const { bounds } = sel[i];
-              for (let j = bounds?.top; j <= bounds?.bottom; j++) {
-                for (let k = bounds?.left; k <= bounds?.right; k++) {
+              for (
+                let rowIndex = bounds?.top;
+                rowIndex <= bounds?.bottom;
+                rowIndex++
+              ) {
+                for (
+                  let columnIndex = bounds?.left;
+                  columnIndex <= bounds?.right;
+                  columnIndex++
+                ) {
                   const cellConfig =
-                    getCellConfigRef.current?.(id, {
-                      rowIndex: j,
-                      columnIndex: k,
-                    }) ?? {};
-                  cellChanges[j] = cellChanges[j] ?? {};
-                  cellChanges[j][k] = cellConfig;
-                  changes[sheetName][j] = changes[sheetName][j] ?? {};
-                  changes[sheetName][j][k] = cellConfig;
+                    getCellConfigRef.current?.(id, { rowIndex, columnIndex }) ??
+                    {};
+                  cellChanges[rowIndex] = cellChanges[rowIndex] ?? {};
+                  cellChanges[rowIndex][columnIndex] = cellConfig;
+                  changes[sheetName][rowIndex] =
+                    changes[sheetName][rowIndex] ?? {};
+                  changes[sheetName][rowIndex][columnIndex] = cellConfig;
                 }
               }
             }
@@ -1412,7 +1419,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         /**
          * Using RAF such that calculation engine gets the right values from state
          */
-        callBackOnCellValueModification(id, activeCell, selections);
+        cellChangeCallback(id, activeCell, selections);
       },
       []
     );
@@ -1548,7 +1555,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         });
 
         /* Trigger callback */
-        callBackOnCellValueModification(
+        cellChangeCallback(
           id,
           activeCell,
           selection === void 0 ? void 0 : [selection]
