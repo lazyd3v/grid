@@ -62,10 +62,9 @@ class CalcEngine {
     const config = getValue(sheet, cell);
     if (value === void 0 || isNull(value) || config?.datatype !== "formula") {
       const cellAddress = cellToAddress(cell);
-      if (!cellAddress) return;
+      if (!cellAddress) return void 0;
       if (!this.mapping.has(cellAddress, sheet)) {
-        log("No dependencies for ", cellAddress);
-        return;
+        return void 0;
       }
       const node = this.mapping.get(cellAddress, sheet, cell);
       if (!node) return void 0;
@@ -76,7 +75,6 @@ class CalcEngine {
         const values = await this.calculateDependencies(dependencies, getValue);
         /* Remove all caches after calculation is complete */
         this.parser.clearCachedValues();
-
         return values;
       }
       return void 0;
@@ -205,7 +203,7 @@ class CalcEngine {
     /* Remove all caches after calculation is complete */
     this.parser.clearCachedValues();
 
-    return merge(changes, values);
+    return this.prepareOutput(merge(changes, values));
   };
 
   /**
@@ -246,6 +244,11 @@ class CalcEngine {
       }
     }
     return false;
+  };
+
+  prepareOutput = (changes: CellsBySheet) => {
+    if (Object.keys(changes).length) return changes;
+    return void 0;
   };
 
   prepareResult = (
@@ -375,7 +378,7 @@ class CalcEngine {
         }
       }
     }
-    return values;
+    return this.prepareOutput(values);
   };
 
   /**

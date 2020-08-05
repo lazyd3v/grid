@@ -65,7 +65,7 @@ import {
   StateInterface,
   ActionTypes,
 } from "./state";
-import { Patch } from "immer";
+import { Patch, applyPatches } from "immer";
 import { ContextMenuComponentProps } from "./ContextMenu/ContextMenu";
 import ContextMenuComponent from "./ContextMenu";
 import TooltipComponent, { TooltipProps } from "./Tooltip";
@@ -859,6 +859,9 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     /* Selected sheet */
     const setSelectedSheet = useCallback(
       (id: React.ReactText) => {
+        if (id === selectedSheet) {
+          return;
+        }
         dispatch({
           type: ACTION_TYPE.SELECT_SHEET,
           id,
@@ -941,6 +944,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           dispatch({
             type: ACTION_TYPE.UPDATE_CELLS,
             changes: values,
+            undoable: false,
           });
         }
       },
@@ -1059,7 +1063,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           loadingShown = true;
         }, LOADING_INDICATOR_DELAY);
 
-        await callBackOnCellModification(id, cell);
+        await callBackOnCellValueModification(id, cell);
 
         receivedResponse = true;
 
@@ -1317,7 +1321,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         currentGrid.current?.focus();
 
         /* Trigger Formula */
-        callBackOnCellModification(id, activeCell, [fillSelection]);
+        callBackOnCellValueModification(id, activeCell, [fillSelection]);
       },
       [sheets]
     );
@@ -1328,7 +1332,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
      * @param activeCell
      * @param selections
      */
-    const callBackOnCellModification = useCallback(
+    const callBackOnCellValueModification = useCallback(
       (
         id: SheetID,
         activeCell: CellInterface,
@@ -1408,7 +1412,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         /**
          * Using RAF such that calculation engine gets the right values from state
          */
-        callBackOnCellModification(id, activeCell, selections);
+        callBackOnCellValueModification(id, activeCell, selections);
       },
       []
     );
@@ -1510,6 +1514,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           type: ACTION_TYPE.UPDATE_SCROLL,
           id,
           scrollState,
+          undoable: false,
         });
       },
       []
@@ -1542,6 +1547,13 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           selection,
         });
 
+        /* Trigger callback */
+        callBackOnCellValueModification(
+          id,
+          activeCell,
+          selection === void 0 ? void 0 : [selection]
+        );
+
         /* Should select */
         if (rowIndex === endRowIndex && columnIndex === endColumnIndex) return;
 
@@ -1564,6 +1576,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         dispatch({
           type: ACTION_TYPE.COPY,
           id,
+          undoable: false,
         });
       },
       []
