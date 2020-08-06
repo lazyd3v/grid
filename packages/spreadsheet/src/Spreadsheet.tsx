@@ -1441,48 +1441,41 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         };
         const cellChanges: Cells = {};
 
-        /**
-         * Use RAF so we can pick the right state from store
-         */
-        return new Promise((resolve) => {
-          window.requestAnimationFrame(async () => {
-            for (let i = 0; i < sel.length; i++) {
-              const { bounds } = sel[i];
+        window.requestAnimationFrame(async () => {
+          for (let i = 0; i < sel.length; i++) {
+            const { bounds } = sel[i];
+            for (
+              let rowIndex = bounds?.top;
+              rowIndex <= bounds?.bottom;
+              rowIndex++
+            ) {
               for (
-                let rowIndex = bounds?.top;
-                rowIndex <= bounds?.bottom;
-                rowIndex++
+                let columnIndex = bounds?.left;
+                columnIndex <= bounds?.right;
+                columnIndex++
               ) {
-                for (
-                  let columnIndex = bounds?.left;
-                  columnIndex <= bounds?.right;
-                  columnIndex++
-                ) {
-                  const cellConfig =
-                    getCellConfigRef.current?.(id, { rowIndex, columnIndex }) ??
-                    {};
-                  cellChanges[rowIndex] = cellChanges[rowIndex] ?? {};
-                  cellChanges[rowIndex][columnIndex] = cellConfig;
-                  // Prevent unnecessary objects
-                  if (shouldRecalc) {
-                    changes[sheetName][rowIndex] =
-                      changes[sheetName][rowIndex] ?? {};
-                    changes[sheetName][rowIndex][columnIndex] = cellConfig;
-                  }
+                const cellConfig =
+                  getCellConfigRef.current?.(id, { rowIndex, columnIndex }) ??
+                  {};
+                cellChanges[rowIndex] = cellChanges[rowIndex] ?? {};
+                cellChanges[rowIndex][columnIndex] = cellConfig;
+                // Prevent unnecessary objects
+                if (shouldRecalc) {
+                  changes[sheetName][rowIndex] =
+                    changes[sheetName][rowIndex] ?? {};
+                  changes[sheetName][rowIndex][columnIndex] = cellConfig;
                 }
               }
             }
+          }
 
-            /* Trigger Batch Calculation */
-            if (shouldRecalc) {
-              triggerBatchCalculation(sheetName, id, activeCell, changes);
-            }
+          /* Trigger Batch Calculation */
+          if (shouldRecalc) {
+            triggerBatchCalculation(sheetName, id, activeCell, changes);
+          }
 
-            /* OnChange cell */
-            onChangeCells?.(id, cellChanges);
-
-            resolve();
-          });
+          /* OnChange cell */
+          onChangeCells?.(id, cellChanges);
         });
       },
       [disableFormula]

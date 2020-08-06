@@ -1,23 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { Sheet, SpreadSheetProps, SheetID } from "../Spreadsheet";
 import { GoPlus } from "react-icons/go";
 import { MdMenu, MdCheck } from "react-icons/md";
 import {
-  // IconButton,
   Flex,
   Box,
   useTheme,
-  useColorMode
+  useColorMode,
   // Tooltip,
 } from "@chakra-ui/core";
-import { ROW_HEADER_WIDTH, DARK_MODE_COLOR } from "../constants";
+import { DARK_MODE_COLOR } from "../constants";
 import { IconButton, Tooltip, Button } from "./../styled";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
-  PopoverArrow
+  PopoverArrow,
 } from "@chakra-ui/core";
 import TabItem from "./TabItem";
 import { translations } from "../translations";
@@ -39,7 +38,7 @@ interface TabProps
   leftSpacing?: number;
 }
 
-const Tabs: React.FC<TabProps> = props => {
+const Tabs: React.FC<TabProps> = (props) => {
   const {
     sheets,
     onSelect,
@@ -48,20 +47,19 @@ const Tabs: React.FC<TabProps> = props => {
     onChangeSheetName,
     onDeleteSheet,
     onDuplicateSheet,
-    isTabEditable,
     allowNewSheet,
     onShowSheet,
     onHideSheet,
     onProtectSheet,
     onUnProtectSheet,
     onChangeTabColor,
-    leftSpacing = 0
+    leftSpacing = 0,
   } = props;
   const theme = useTheme();
   const { colorMode } = useColorMode();
   const isLight = colorMode === "light";
   const color = isLight ? theme.colors.gray[900] : theme.colors.gray[300];
-  const visibleSheets = sheets.filter(sheet => !sheet.hidden);
+  const visibleSheets = sheets.filter((sheet) => !sheet.hidden);
   const visibleSheetsLen = visibleSheets.length;
   return (
     <Flex pl={leftSpacing} alignItems="center" minWidth={0} flex={1}>
