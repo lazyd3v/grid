@@ -239,29 +239,18 @@ exports[`SpreadSheet matches snapshot 1`] = `
           class="css-1tpgmrf"
         />
         <div
-          aria-expanded="false"
-          aria-haspopup="listbox"
-          aria-labelledby="font-size-label"
           class="css-79elbk"
-          role="combobox"
         >
           <div
             class="css-70qvj9"
           >
             <input
-              aria-autocomplete="list"
-              aria-labelledby="font-size-label"
-              autocomplete="off"
-              id="font-size-input"
               style="width: 44px; height: 24px; padding-left: 4px; padding-right: 2px; border-color: #cbd5e0; background: rgb(255, 255, 255); color: rgb(26, 32, 44); border-style: solid; border-width: 1px; font-size: 12px;"
               value="12"
             />
             <button
-              aria-haspopup="true"
-              aria-label="open menu"
+              aria-label="Open"
               class="css-qvndex-IconButton"
-              data-toggle="true"
-              role="button"
               type="button"
             >
               <svg
@@ -279,106 +268,70 @@ exports[`SpreadSheet matches snapshot 1`] = `
             </button>
           </div>
           <div
-            aria-labelledby="font-size-label"
             class="css-b0ps0v"
-            id="font-size-menu"
-            role="listbox"
           >
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-0"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               6
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-1"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               7
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-2"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               8
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-3"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               9
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-4"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               10
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-5"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               11
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-6"
-              role="option"
-              style="cursor: pointer; background-color: rgb(237, 242, 247); font-weight: bold;"
+              style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               12
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-7"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               14
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-8"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               18
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-9"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               24
             </div>
             <div
-              aria-selected="false"
               class="css-15f4sd9"
-              id="font-size-item-10"
-              role="option"
               style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
             >
               36

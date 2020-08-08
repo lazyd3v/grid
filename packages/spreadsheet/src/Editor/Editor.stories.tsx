@@ -23,7 +23,7 @@ export const ListEditor = () => {
   const position = { x: 0, y: 0, width: 200, height: 20 };
   const cell = { rowIndex: 1, columnIndex: 1 };
   const activeCell = { rowIndex: 1, columnIndex: 1 };
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState("USA");
   const editorType = "list";
   const options = ["Singapore", "USA", "Japan"];
   return (
@@ -61,5 +61,5 @@ export const FormulaEditor = () => {
 
 export default {
   title: "Editor",
-  component: TextEditor
+  component: TextEditor,
 };

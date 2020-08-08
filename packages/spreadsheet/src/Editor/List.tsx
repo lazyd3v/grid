@@ -4,12 +4,13 @@ import React, {
   useRef,
   memo,
   useState,
-  useCallback
+  useCallback,
 } from "react";
 import { KeyCodes, Direction } from "@rowsncolumns/grid";
 import Downshift from "downshift";
 import { Box, useTheme, useColorMode } from "@chakra-ui/core";
 import { DARK_MODE_COLOR } from "../constants";
+import useShiftDown from "./../hooks/useShiftDown";
 
 export interface ListEditorProps {
   options?: string[];
@@ -47,8 +48,28 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
       options = EMPTY_ARRAY,
       ...rest
     } = props;
-    const initialInputValue = useRef(initialValue);
-    const direction = useRef<Direction | null>(null);
+    const {
+      highlightedIndex,
+      inputValue,
+      onKeyDown: onShiftDownKeyDown,
+      setInputValue,
+      menuRef,
+      selectedItem,
+      setSelectedItem,
+      items,
+      onMouseMove,
+      onMouseDown,
+      onClick,
+    } = useShiftDown({
+      initialInputValue: initialValue,
+      initialIsOpen: true,
+      initialSelectedItem: initialValue,
+      options,
+      onChange: (item) => {
+        onSubmit?.(item as string | undefined);
+      },
+    });
+
     useEffect(() => {
       if (!inputRef.current) return;
       inputRef.current.focus();
@@ -71,149 +92,117 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
       : theme.colors.gray[700];
     return (
       <>
-        <Downshift
-          id="list-editor"
-          initialInputValue={initialValue}
-          onChange={value => {
-            onSubmit(value ?? undefined);
-          }}
-          initialIsOpen
-          initialSelectedItem={initialValue}
-        >
-          {({
-            getRootProps,
-            getInputProps,
-            getMenuProps,
-            getItemProps,
-            inputValue,
-            selectedItem,
-            highlightedIndex
-          }) => {
-            direction.current = null;
-            const inputProps = getInputProps();
-            const items = options.filter(item => {
-              if (!inputValue || inputValue === initialInputValue.current)
-                return true;
-              return new RegExp(inputValue, "gi").test(item);
-            });
-            return (
-              <Box {...getRootProps(undefined, { suppressRefError: true })}>
-                <input
-                  {...inputProps}
-                  ref={inputRef}
-                  style={{
-                    fontFamily,
-                    fontSize: fontSize * scale,
-                    width: "100%",
-                    height: "100%",
-                    padding: "0 1px",
-                    margin: 0,
-                    boxSizing: "border-box",
-                    borderWidth: 0,
-                    outline: "none",
-                    resize: "none",
-                    overflow: "hidden",
-                    verticalAlign: "top",
-                    background: "transparent",
-                    color: color,
-                    whiteSpace: "pre-wrap",
-                    textAlign: horizontalAlign,
-                    lineHeight: "14px"
-                  }}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    inputProps.onChange?.(e);
-                    onChange?.(e.target.value);
-                  }}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (!inputRef.current) return;
-                    const isShiftKey = e.nativeEvent.shiftKey;
-                    const isMetaKey = e.nativeEvent.metaKey;
-                    const value = inputRef.current.value;
+        <Box>
+          <input
+            ref={inputRef}
+            value={inputValue}
+            style={{
+              fontFamily,
+              fontSize: fontSize * scale,
+              width: "100%",
+              height: "100%",
+              padding: "0 1px",
+              margin: 0,
+              boxSizing: "border-box",
+              borderWidth: 0,
+              outline: "none",
+              resize: "none",
+              overflow: "hidden",
+              verticalAlign: "top",
+              background: "transparent",
+              color: color,
+              whiteSpace: "pre-wrap",
+              textAlign: horizontalAlign,
+              lineHeight: "14px",
+            }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setInputValue(e.target.value);
+              onChange?.(e.target.value);
+            }}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (!inputRef.current) return;
+              const isShiftKey = e.nativeEvent.shiftKey;
+              const isMetaKey = e.nativeEvent.metaKey;
+              const value = inputRef.current.value;
 
-                    if (
-                      inputProps &&
-                      inputProps.onKeyDown &&
-                      e.which !== KeyCodes.Enter
-                    ) {
-                      inputProps.onKeyDown(e);
-                    }
+              if (onShiftDownKeyDown && e.which !== KeyCodes.Enter) {
+                onShiftDownKeyDown(e);
+              }
 
-                    // Enter key
-                    if (e.which === KeyCodes.Enter) {
-                      /* Add a new line when Cmd/Ctrl key is pressed */
-                      // if (isMetaKey) {
-                      //   return onChange(value + "\n");
-                      // }
-                      onSubmit &&
-                        onSubmit(
-                          highlightedIndex === null
-                            ? value
-                            : items[highlightedIndex],
-                          isShiftKey ? Direction.Up : Direction.Down
-                        );
-                    }
+              // Enter key
+              if (e.which === KeyCodes.Enter) {
+                /* Add a new line when Cmd/Ctrl key is pressed */
+                // if (isMetaKey) {
+                //   return onChange(value + "\n");
+                // }
+                onSubmit &&
+                  onSubmit(
+                    highlightedIndex === null ? value : items[highlightedIndex],
+                    isShiftKey ? Direction.Up : Direction.Down
+                  );
+              }
 
-                    if (e.which === KeyCodes.Escape) {
-                      onCancel && onCancel();
-                    }
+              if (e.which === KeyCodes.Escape) {
+                onCancel && onCancel();
+              }
 
-                    if (e.which === KeyCodes.Tab) {
-                      onSubmit &&
-                        onSubmit(
-                          highlightedIndex === null
-                            ? value
-                            : items[highlightedIndex],
-                          isShiftKey ? Direction.Left : Direction.Right
-                        );
-                    }
-                  }}
-                />
+              if (e.which === KeyCodes.Tab) {
+                onSubmit &&
+                  onSubmit(
+                    highlightedIndex === null ? value : items[highlightedIndex],
+                    isShiftKey ? Direction.Left : Direction.Right
+                  );
+              }
+            }}
+          />
+          <Box
+            ref={menuRef}
+            width="auto"
+            left="-2px"
+            shadow="md"
+            background={dropdownBgColor}
+            pb={1}
+            pt={1}
+            position="absolute"
+            top="100%"
+            mt="2px"
+            borderColor={borderColor}
+            borderStyle="solid"
+            borderWidth={1}
+            minWidth="calc(100% + 4px)"
+            maxHeight={400}
+            overflow="auto"
+          >
+            {items.map((item, index) => {
+              return (
                 <Box
-                  {...getMenuProps()}
-                  width="auto"
-                  left="-2px"
-                  shadow="md"
-                  background={dropdownBgColor}
-                  pb={1}
-                  pt={1}
-                  position="absolute"
-                  top="100%"
-                  mt="2px"
-                  borderColor={borderColor}
-                  borderStyle="solid"
-                  borderWidth={1}
-                  minWidth="calc(100% + 4px)"
+                  fontSize={12}
+                  padding={1}
+                  pl={2}
+                  pr={2}
+                  whiteSpace="nowrap"
+                  color={inputColor}
+                  cursor="pointer"
+                  onMouseMove={() => onMouseMove?.(index)}
+                  onMouseDown={onMouseDown}
+                  onClick={() => onClick?.(item)}
+                  key={item}
+                  style={{
+                    fontWeight: selectedItem === item ? "bold" : "normal",
+                    backgroundColor:
+                      highlightedIndex === index || selectedItem === item
+                        ? isLight
+                          ? theme.colors.gray[100]
+                          : "rgba(255,255,255,0.06)"
+                        : dropdownBgColor,
+                  }}
                 >
-                  {items.map((item, index) => {
-                    return (
-                      <Box
-                        fontSize={12}
-                        padding={1}
-                        pl={2}
-                        pr={2}
-                        whiteSpace="nowrap"
-                        {...getItemProps({ key: item, item, index })}
-                        color={inputColor}
-                        cursor="pointer"
-                        style={{
-                          fontWeight: selectedItem === item ? "bold" : "normal",
-                          backgroundColor:
-                            highlightedIndex === index || selectedItem === item
-                              ? isLight
-                                ? theme.colors.gray[100]
-                                : "rgba(255,255,255,0.06)"
-                              : dropdownBgColor
-                        }}
-                      >
-                        {item}
-                      </Box>
-                    );
-                  })}
+                  {item}
                 </Box>
-              </Box>
-            );
-          }}
-        </Downshift>
+              );
+            })}
+          </Box>
+        </Box>
       </>
     );
   })

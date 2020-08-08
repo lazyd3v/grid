@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useState,
   useMemo,
-  forwardRef
+  forwardRef,
 } from "react";
 import { EditorProps } from "@rowsncolumns/grid/dist/hooks/useEditable";
 import { autoSizerCanvas } from "@rowsncolumns/grid";
@@ -16,7 +16,7 @@ import {
   DEFAULT_FONT_FAMILY,
   cellToAddress,
   DEFAULT_CELL_PADDING,
-  sanitizeSheetName
+  sanitizeSheetName,
 } from "../constants";
 import { EditorType } from "../types";
 import { ExtraEditorProps } from "../Grid/Grid";
@@ -37,7 +37,9 @@ export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
 }
 
 export type RefAttribute = {
-  ref?: React.Ref<HTMLTextAreaElement | HTMLInputElement | null>;
+  ref?: React.Ref<
+    HTMLTextAreaElement | HTMLInputElement | HTMLDivElement | null
+  >;
 };
 
 /**
@@ -92,22 +94,22 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
     const textSizer = useRef(autoSizerCanvas);
     const { x = 0, y = 0, width = 0, height = 0 } = position;
     const getInputDims = useCallback(
-      text => {
+      (text) => {
         /*  Set font */
         textSizer.current.setFont({
           fontSize,
           fontFamily,
-          scale
+          scale,
         });
 
         const {
           width: measuredWidth,
-          height: measuredHeight
+          height: measuredHeight,
         } = textSizer.current.measureText(text);
 
         return [
           Math.max(measuredWidth + padding, width + borderWidth / 2),
-          Math.max(measuredHeight + DEFAULT_CELL_PADDING + borderWidth, height)
+          Math.max(measuredHeight + DEFAULT_CELL_PADDING + borderWidth, height),
         ];
       },
       [width, height, fontSize, fontFamily, wrapping, scale]
@@ -141,7 +143,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       hasScrollPositionChanged.current || hasSheetChanged.current;
     /* Change */
     const handleChange = useCallback(
-      value => {
+      (value) => {
         onChange?.(value, cell);
       },
       [cell]
@@ -171,7 +173,9 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           padding: borderWidth,
           boxShadow: "0 2px 6px 2px rgba(60,64,67,.15)",
           border: "2px #1a73e8 solid",
-          background: backgroundColor
+          background: backgroundColor,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         {showAddress ? (
@@ -189,7 +193,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
               bottom: "100%",
               background: "#4589eb",
               color: "white",
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
             }}
           >
             {hasSheetChanged.current ? sanitizeSheetName(sheetName) + "!" : ""}
