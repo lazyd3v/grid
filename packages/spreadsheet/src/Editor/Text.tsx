@@ -6,7 +6,7 @@ export interface TextEditorProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (value: string, direction: Direction) => void;
-  onCancel: () => void;
+  onCancel: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   fontFamily: string;
   fontSize: number;
   scale: number;
@@ -14,6 +14,7 @@ export interface TextEditorProps {
   wrapping: any;
   horizontalAlign: any;
   underline?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 export type RefAttribute = {
@@ -44,6 +45,7 @@ const TextEditor: React.FC<TextEditorProps & RefAttribute> = memo(
       wrapping,
       horizontalAlign,
       underline,
+      onKeyDown,
       ...rest
     } = props;
     return (
@@ -70,7 +72,7 @@ const TextEditor: React.FC<TextEditorProps & RefAttribute> = memo(
           whiteSpace: "pre-wrap",
           textAlign: horizontalAlign,
           lineHeight: "normal",
-          textDecoration: underline ? "underline" : "none"
+          textDecoration: underline ? "underline" : "none",
         }}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
           onChange(e.target.value);
@@ -80,6 +82,8 @@ const TextEditor: React.FC<TextEditorProps & RefAttribute> = memo(
           const isShiftKey = e.nativeEvent.shiftKey;
           const isMetaKey = e.nativeEvent.metaKey;
           const value = inputRef.current.value;
+
+          onKeyDown?.(e);
 
           // Enter key
           if (e.which === KeyCodes.Enter) {
@@ -92,7 +96,7 @@ const TextEditor: React.FC<TextEditorProps & RefAttribute> = memo(
           }
 
           if (e.which === KeyCodes.Escape) {
-            onCancel && onCancel();
+            onCancel && onCancel(e);
           }
 
           if (e.which === KeyCodes.Tab) {

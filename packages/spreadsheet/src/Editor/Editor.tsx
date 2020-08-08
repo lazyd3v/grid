@@ -7,7 +7,7 @@ import React, {
   forwardRef,
 } from "react";
 import { EditorProps } from "@rowsncolumns/grid/dist/hooks/useEditable";
-import { autoSizerCanvas } from "@rowsncolumns/grid";
+import { autoSizerCanvas, Direction } from "@rowsncolumns/grid";
 import TextEditor from "./Text";
 import ListEditor from "./List";
 import { useColorMode } from "@chakra-ui/core";
@@ -34,6 +34,11 @@ export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
   underline?: boolean;
   sheetName?: string;
   address?: string | null;
+  onKeyDown?: (
+    e: React.KeyboardEvent<
+      HTMLTextAreaElement | HTMLInputElement | HTMLDivElement
+    >
+  ) => void;
 }
 
 export type RefAttribute = {
@@ -73,6 +78,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       sheetName,
       address,
       selectedSheetName,
+      onKeyDown,
       ...rest
     } = props;
     const wrapping: any = cellWrap === "wrap" ? "wrap" : "nowrap";
@@ -149,19 +155,14 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       [cell]
     );
     /* Submit */
-    const handleSubmit = useCallback(
-      (value, direction) => {
-        const nextCell = direction
-          ? nextFocusableCell?.(cell, direction)
-          : cell;
-        onSubmit?.(value, cell, nextCell);
-      },
-      [cell]
-    );
+    const handleSubmit = (value: React.ReactText, direction?: Direction) => {
+      const nextCell = direction ? nextFocusableCell?.(cell, direction) : cell;
+      onSubmit?.(value, cell, nextCell);
+    };
     /* Cancel */
-    const handleCancel = useCallback(() => {
-      onCancel?.();
-    }, [cell]);
+    const handleCancel = (e?: React.KeyboardEvent<any>) => {
+      onCancel?.(e);
+    };
     return (
       <div
         style={{
@@ -214,6 +215,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
             onChange={handleChange}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
+            onKeyDown={onKeyDown}
           />
         ) : null}
         {editorType === "list" ? (

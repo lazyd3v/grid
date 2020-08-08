@@ -50,11 +50,6 @@ export interface UseSelectionOptions {
    */
   allowDeselectSelection?: boolean;
   /**
-   * If true, user can select multiple selections without pressing Ctrl/Cmd.
-   * Useful for formula mode
-   */
-  persistantSelectionMode?: boolean;
-  /**
    * onFill
    */
   onFill?: (
@@ -121,6 +116,7 @@ export interface UseSelectionOptions {
    * Value getter
    */
   getValue: (cell: CellInterface) => React.ReactText | undefined;
+  newSelectionMode?: "clear" | "modify" | "append";
 }
 
 export interface SelectionResults {
@@ -201,7 +197,7 @@ const useSelection = ({
   columnCount = 0,
   rowCount = 0,
   selectionPolicy = "multiple",
-  persistantSelectionMode = false,
+  newSelectionMode = "clear",
   allowDeselectSelection = true,
   onFill,
   isHiddenRow = defaultIsHidden,
@@ -272,9 +268,17 @@ const useSelection = ({
     if (!bounds) return;
     const coords = { rowIndex: bounds.top, columnIndex: bounds.left };
     /* Keep track  of first cell that was selected by user */
-    firstActiveCell.current = coords;
+
     setActiveCell(coords);
-    clearSelections();
+    console.log("newSelectionMode", newSelectionMode);
+    if (newSelectionMode === "clear") {
+      firstActiveCell.current = coords;
+      clearSelections();
+    } else if (newSelectionMode === "modify") {
+      modifySelection(coords);
+    } else {
+      appendSelection(coords);
+    }
   };
 
   /**
@@ -439,7 +443,7 @@ const useSelection = ({
       }
       const isShiftKey = e.nativeEvent.shiftKey;
       const isMetaKey = e.nativeEvent.ctrlKey || e.nativeEvent.metaKey;
-      const allowMultiple = persistantSelectionMode || isMetaKey;
+      const allowMultiple = isMetaKey;
       const allowDeselect = allowDeselectSelection;
       const hasSelections = selections.length > 0;
       const isDeselecting = isMetaKey && allowDeselect;
@@ -550,6 +554,7 @@ const useSelection = ({
       alwaysScrollToActiveCell,
       rowCount,
       columnCount,
+      newSelectionMode,
     ]
   );
 
@@ -769,6 +774,7 @@ const useSelection = ({
       selectionLeftBound,
       selectionTopBound,
       selectionPolicy,
+      newSelectionMode,
     ]
   );
 
@@ -1044,7 +1050,14 @@ const useSelection = ({
           break;
       }
     },
-    [rowCount, columnCount, activeCell, selections, selectionPolicy]
+    [
+      rowCount,
+      columnCount,
+      activeCell,
+      selections,
+      selectionPolicy,
+      newSelectionMode,
+    ]
   );
 
   /**
@@ -1097,13 +1110,13 @@ const useSelection = ({
     if (!bounds) return;
 
     const direction =
-      bounds.right > activeCellBounds.right
-        ? Direction.Right
-        : bounds.top < activeCellBounds.top
+      bounds.top < activeCellBounds.top
         ? Direction.Up
-        : bounds.left < activeCellBounds.left
-        ? Direction.Left
-        : Direction.Down;
+        : bounds.bottom > activeCellBounds.bottom
+        ? Direction.Down
+        : bounds.right > activeCellBounds.right
+        ? Direction.Right
+        : Direction.Left;
 
     if (direction === Direction.Right) {
       bounds = {

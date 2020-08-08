@@ -744,7 +744,7 @@ exports[`SpreadSheet matches snapshot 1`] = `
                 style="transform: translate(-46px, -24px);"
               >
                 <div
-                  style="position: absolute; top: 24px; left: 46px; height: 20px; width: 99px; background-color: transparent; user-select: none; pointer-events: none;"
+                  style="position: absolute; top: 24px; left: 46px; height: 20px; width: 99px; background-color: transparent; opacity: 1; user-select: none; pointer-events: none;"
                 />
                 <div
                   style="position: absolute; left: 46px; top: 24px; width: 99px; height: 2px; border-width: 0px; border-color: #1a73e8; border-top-width: 2px; border-style: solid;"

@@ -117,6 +117,7 @@ export const createHTMLBox = ({
   strokeLeftWidth = strokeWidth,
   key,
   strokeStyle = "solid",
+  fillOpacity = 1,
 }: ShapeConfig) => {
   const commonProps = {};
   width = width - Math.floor(strokeWidth / 2);
@@ -197,6 +198,7 @@ export const createHTMLBox = ({
             height,
             width,
             backgroundColor: fill,
+            opacity: fillOpacity,
             userSelect: "none",
             pointerEvents: "none",
           }}

@@ -31,6 +31,10 @@ import Grid, {
   StylingProps,
   DefaultTooltipProps,
   castToString,
+  isArrowKey,
+  KeyCodes,
+  SelectionProps,
+  Selection,
 } from "@rowsncolumns/grid";
 import { debounce, cellIdentifier } from "@rowsncolumns/grid";
 import { ThemeProvider, ColorModeProvider } from "@chakra-ui/core";
@@ -63,6 +67,7 @@ import { FILTER_ICON_DIM } from "../FilterIcon/FilterIcon";
 import { ContextMenuComponentProps } from "../ContextMenu/ContextMenu";
 import { LIST_ICON_DIM } from "../ListArrow/ListArrow";
 import TooltipComponent, { TooltipProps } from "./../Tooltip";
+import { getSelectionColorAtIndex } from "./../FormulaInput/helpers";
 
 const EMPTY_ARRAY: any = [];
 const EMPTY_OBJECT: any = {};
@@ -312,6 +317,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const editorRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(
       null
     );
+    const editingCellRef = useRef<CellInterface>();
     const [isFormulaMode, setFormulaMode] = useState(false);
 
     /**
@@ -694,6 +700,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       clearSelections,
       ...selectionProps
     } = useSelection({
+      newSelectionMode: isFormulaMode ? "modify" : "clear",
       selectionPolicy,
       selectionTopBound,
       selectionLeftBound,
@@ -726,6 +733,12 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         return true;
       },
     });
+
+    useEffect(() => {
+      if (isFormulaMode) {
+        editorRef.current?.focus();
+      }
+    }, [selections, isFormulaMode]);
 
     /**
      * Copy paste
@@ -931,8 +944,39 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
 
         /* Switch off formula mode */
         setFormulaMode(false);
+
+        /* Clear selections */
+        clearSelections();
+
+        /* Reset edit ref */
+        editingCellRef.current = undefined;
       },
       [selectedSheet, scale, rowSizes, isFormulaMode]
+    );
+
+    const handleEditorCancel = useCallback(
+      (e?: React.KeyboardEvent<any>) => {
+        if (isFormulaMode) {
+          if (
+            editingCellRef.current &&
+            e?.nativeEvent.keyCode === KeyCodes.Escape
+          ) {
+            setActiveCell(editingCellRef.current);
+          }
+
+          /* Switch off formula mode */
+          setFormulaMode(false);
+
+          /**
+           * Clear selections
+           */
+          clearSelections();
+        }
+
+        /* Reset ref */
+        editingCellRef.current = undefined;
+      },
+      [isFormulaMode]
     );
 
     const { tooltipComponent, ...tooltipProps } = useTooltip({
@@ -983,12 +1027,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       (value: string, cell: CellInterface) => {
         onActiveCellValueChange?.(value, cell);
         const isFormula = castToString(value)?.startsWith("=");
-        if (isFormulaMode === isFormula) {
-          return;
-        }
         setFormulaMode(!!isFormula);
       },
-      [isFormulaMode]
+      []
     );
 
     /**
@@ -1003,10 +1044,26 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       hideEditor,
       submitEditor,
       cancelEditor,
-      editingCell,
       showEditor,
       ...editableProps
     } = useEditable({
+      onBeforeEdit: (cell: CellInterface) => {
+        if (editingCellRef.current) {
+          if (
+            editingCellRef.current.rowIndex !== cell.rowIndex &&
+            editingCellRef.current.columnIndex !== cell.columnIndex
+          ) {
+            clearSelections();
+          }
+        }
+        editingCellRef.current = cell;
+      },
+      hideOnBlur: !isFormulaMode,
+      onKeyDown: (e) => {
+        if (isFormulaMode && isArrowKey(e.nativeEvent.which)) {
+          selectionProps.onKeyDown(e);
+        }
+      },
       editorProps: (): ExtraEditorProps => {
         return {
           selectedSheetName: sheetName,
@@ -1054,6 +1111,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       selectionTopBound,
       selectionLeftBound,
       onSubmit: handleSubmit,
+      onCancel: handleEditorCancel,
       getValue: getValueText,
       onChange: handleActiveCellValueChange,
       canEdit: (cell: CellInterface) => {
@@ -1362,6 +1420,48 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       [getValue, selectedSheet, activeCell, selections]
     );
 
+    const selectionRenderer = useCallback(
+      (props: SelectionProps) => {
+        const { type, key } = props;
+        const isFill = type === "fill";
+        const isActiveCell = type === "activeCell";
+        const defaultSelectionBorder = "#1a73e8";
+        const defaultSelectionFill = "rgb(14, 101, 235, 0.1)";
+        const stroke = isFill
+          ? "gray"
+          : isFormulaMode
+          ? isActiveCell
+            ? selections.length
+              ? "transparent"
+              : defaultSelectionBorder
+            : getSelectionColorAtIndex(key)
+          : defaultSelectionBorder;
+
+        const fillOpacity = isFill ? 0 : isFormulaMode ? 0.1 : 1;
+        const fill = isFill
+          ? "transparent"
+          : isActiveCell
+          ? "transparent"
+          : isFormulaMode
+          ? getSelectionColorAtIndex(key)
+          : defaultSelectionFill;
+
+        const strokeWidth = isFill ? 1 : isFormulaMode || isActiveCell ? 2 : 1;
+        const strokeStyle = isFill || isFormulaMode ? "dashed" : "solid";
+        return (
+          <Selection
+            {...props}
+            stroke={stroke}
+            fill={fill}
+            strokeWidth={strokeWidth}
+            strokeStyle={strokeStyle}
+            fillOpacity={fillOpacity}
+          />
+        );
+      },
+      [isFormulaMode, selections]
+    );
+
     /**
      * Hides context menu
      */
@@ -1420,6 +1520,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           onContextMenu={showContextMenu}
           onViewChange={onViewChange}
           {...tooltipProps}
+          selectionRenderer={selectionRenderer}
         />
         {editorComponent}
         {ContextMenu !== void 0 && contextMenuProps && (

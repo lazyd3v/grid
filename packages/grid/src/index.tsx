@@ -13,7 +13,8 @@ import useCopyPaste from "./hooks/useCopyPaste";
 import useUndo from "./hooks/useUndo";
 import usePagination from "./hooks/usePagination";
 import useFilter from "./hooks/useFilter";
-import Image from './Image'
+import Image from "./Image";
+import Selection from "./Selection";
 
 export {
   Grid,
@@ -31,6 +32,7 @@ export {
   useFilter,
   CellOverlayRenderer,
   Image,
+  Selection,
 };
 export default Grid;
 export * from "./Grid";
@@ -40,4 +42,4 @@ export * from "./hooks/useUndo";
 export * from "./hooks/useTooltip";
 export * from "./hooks/useEditable";
 export * from "./types";
-export * from './Image'
+export * from "./Image";

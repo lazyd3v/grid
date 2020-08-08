@@ -16,8 +16,8 @@ export interface ListEditorProps {
   options?: string[];
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (value: string | undefined, direction?: Direction) => void;
-  onCancel: () => void;
+  onSubmit: (value: string, direction?: Direction) => void;
+  onCancel: (e?: React.KeyboardEvent<HTMLInputElement>) => void;
   fontFamily: string;
   fontSize: number;
   scale: number;
@@ -66,7 +66,7 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
       initialSelectedItem: initialValue,
       options,
       onChange: (item) => {
-        onSubmit?.(item as string | undefined);
+        onSubmit?.(item as string);
       },
     });
 
