@@ -80,7 +80,7 @@ const TextEditor: React.FC<TextEditorProps & RefAttribute> = memo(
         onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
           if (!inputRef.current) return;
           const isShiftKey = e.nativeEvent.shiftKey;
-          const isMetaKey = e.nativeEvent.metaKey;
+          const isMetaKey = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
           const value = inputRef.current.value;
 
           onKeyDown?.(e);

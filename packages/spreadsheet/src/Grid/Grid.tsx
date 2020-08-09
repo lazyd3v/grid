@@ -67,7 +67,10 @@ import { FILTER_ICON_DIM } from "../FilterIcon/FilterIcon";
 import { ContextMenuComponentProps } from "../ContextMenu/ContextMenu";
 import { LIST_ICON_DIM } from "../ListArrow/ListArrow";
 import TooltipComponent, { TooltipProps } from "./../Tooltip";
-import { getSelectionColorAtIndex } from "./../FormulaInput/helpers";
+import {
+  getSelectionColorAtIndex,
+  getSelectionsFromInput,
+} from "./../FormulaInput/helpers";
 
 const EMPTY_ARRAY: any = [];
 const EMPTY_OBJECT: any = {};
@@ -187,6 +190,8 @@ export interface GridProps {
    */
   onChangeSelectedSheet?: (id: SheetID) => void;
   onCopy?: (selections: SelectionArea[]) => void;
+  selectionBackgroundColor?: string;
+  selectionBorderColor?: string;
 }
 
 export interface RowColSelection {
@@ -306,6 +311,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       sheetName,
       onChangeSelectedSheet,
       onCopy,
+      selectionBackgroundColor = "rgb(14, 101, 235, 0.1)",
+      selectionBorderColor = "#1a73e8",
     } = props;
 
     const gridRef = useRef<GridRef | null>(null);
@@ -1028,6 +1035,10 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         onActiveCellValueChange?.(value, cell);
         const isFormula = castToString(value)?.startsWith("=");
         setFormulaMode(!!isFormula);
+        if (isFormula) {
+          const sel = getSelectionsFromInput(value);
+          setSelections(sel);
+        }
       },
       []
     );
@@ -1425,17 +1436,15 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const { type, key } = props;
         const isFill = type === "fill";
         const isActiveCell = type === "activeCell";
-        const defaultSelectionBorder = "#1a73e8";
-        const defaultSelectionFill = "rgb(14, 101, 235, 0.1)";
         const stroke = isFill
           ? "gray"
           : isFormulaMode
           ? isActiveCell
             ? selections.length
               ? "transparent"
-              : defaultSelectionBorder
+              : selectionBorderColor
             : getSelectionColorAtIndex(key)
-          : defaultSelectionBorder;
+          : selectionBorderColor;
 
         const fillOpacity = isFill ? 0 : isFormulaMode ? 0.1 : 1;
         const fill = isFill
@@ -1444,7 +1453,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           ? "transparent"
           : isFormulaMode
           ? getSelectionColorAtIndex(key)
-          : defaultSelectionFill;
+          : selectionBackgroundColor;
 
         const strokeWidth = isFill ? 1 : isFormulaMode || isActiveCell ? 2 : 1;
         const strokeStyle = isFill || isFormulaMode ? "dashed" : "solid";
@@ -1459,7 +1468,12 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           />
         );
       },
-      [isFormulaMode, selections]
+      [
+        isFormulaMode,
+        selections,
+        selectionBorderColor,
+        selectionBackgroundColor,
+      ]
     );
 
     /**

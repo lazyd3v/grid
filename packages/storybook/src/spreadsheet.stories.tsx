@@ -469,7 +469,8 @@ export const Formula = () => {
               datatype: "formula",
               // text: '=HYPERLINK("Google", www.google.com)'
               // text: '=HYPERLINK("asdas")'
-              text: '=CONCAT(A1, "hello")',
+              // text: '=CONCAT(A1, "hello")',
+              text: "=SUM(A1:A3)",
               // text: "=MMULT({1,5;2,3},{1,2;2,3})",
               // text: '=fetch_csv("https://raw.githubusercontent.com/tlemenestrel/GDP_and_Employment_Rates_Prediction/master/Employment_Rates_Prediction.csv")'
             },

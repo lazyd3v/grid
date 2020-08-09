@@ -268,9 +268,7 @@ const useSelection = ({
     if (!bounds) return;
     const coords = { rowIndex: bounds.top, columnIndex: bounds.left };
     /* Keep track  of first cell that was selected by user */
-
     setActiveCell(coords);
-    console.log("newSelectionMode", newSelectionMode);
     if (newSelectionMode === "clear") {
       firstActiveCell.current = coords;
       clearSelections();
