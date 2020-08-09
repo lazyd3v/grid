@@ -10,7 +10,7 @@ import {
   InputLeftElement,
   Icon,
   Input,
-  Checkbox,
+  Checkbox
 } from "@chakra-ui/core";
 import { DARK_MODE_COLOR } from "../constants";
 import { MenuItem, Button } from "./../styled";
@@ -54,7 +54,7 @@ const FilterComponent = ({
   filter,
   columnIndex,
   index,
-  width,
+  width
 }: FilterComponentProps) => {
   if (!columnIndex) return null;
   const [filterText, setFilterText] = useState("");
@@ -73,9 +73,9 @@ const FilterComponent = ({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     if (checked) {
-      setUserValues((prev) => prev.concat(value));
+      setUserValues(prev => prev.concat(value));
     } else {
-      setUserValues((prev) => prev.filter((v) => v !== value));
+      setUserValues(prev => prev.filter(v => v !== value));
     }
   }, []);
   useEffect(() => {
@@ -87,14 +87,14 @@ const FilterComponent = ({
         ? undefined
         : {
             values: userValues,
-            operator: filter?.operator,
+            operator: filter?.operator
           };
     onChange?.(index, columnIndex, selectedFilter);
   }, [userValues]);
   const isSelectAll = values.length === userValues.length;
   const isIndeterminate = !isSelectAll && userValues.length > 0;
   const items = values
-    .filter((value) => new RegExp(filterText, "gi").test(value.toString()))
+    .filter(value => new RegExp(filterText, "gi").test(value.toString()))
     .sort(sortFn);
   const itemRenderer = useCallback(
     (index, key) => {

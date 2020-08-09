@@ -17,7 +17,7 @@ const useImage = ({ url, crossOrigin }: UseImageProps) => {
     image: undefined,
     status: "loading",
     width: 0,
-    height: 0,
+    height: 0
   }));
 
   useEffect(() => {
@@ -29,14 +29,14 @@ const useImage = ({ url, crossOrigin }: UseImageProps) => {
         image: img,
         height: img.height,
         width: img.width,
-        status: "loaded",
+        status: "loaded"
       });
     }
     function onerror() {
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         image: undefined,
-        status: "failed",
+        status: "failed"
       }));
     }
     img.addEventListener("load", onload);

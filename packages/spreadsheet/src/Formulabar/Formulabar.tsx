@@ -4,7 +4,7 @@ import {
   InputLeftAddon,
   Input,
   useColorMode,
-  useTheme,
+  useTheme
 } from "@chakra-ui/core";
 import { DARK_MODE_COLOR, FORMULABAR_LEFT_CORNER_WIDTH } from "./../constants";
 
@@ -76,7 +76,7 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
           fontSize={12}
           ref={forwardedRef}
           _focus={{
-            boxShadow: "none",
+            boxShadow: "none"
           }}
         />
       </InputGroup>

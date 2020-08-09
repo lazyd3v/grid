@@ -1,6 +1,5 @@
 import React, { memo } from "react";
 import { IconButton, Tooltip } from "./../styled";
-import Downshift from "downshift";
 import { Box, useTheme, useColorMode } from "@chakra-ui/core";
 import { DARK_MODE_COLOR, DARK_MODE_COLOR_LIGHT } from "../constants";
 import { KeyCodes } from "@rowsncolumns/grid/dist/types";
@@ -22,7 +21,7 @@ export interface Option {
   label: string | number;
 }
 
-const Select: React.FC<SelectProps> = memo((props) => {
+const Select: React.FC<SelectProps> = memo(props => {
   const {
     options,
     value,
@@ -30,7 +29,7 @@ const Select: React.FC<SelectProps> = memo((props) => {
     format,
     inputWidth = 44,
     enableInput = true,
-    id,
+    id
   } = props;
   const theme = useTheme();
   const { colorMode } = useColorMode();
@@ -59,13 +58,13 @@ const Select: React.FC<SelectProps> = memo((props) => {
     selectedItem,
     onMouseDown,
     onMouseMove,
-    onClick,
+    onClick
   } = useShiftDown({
     options,
     filter: () => true,
     selectedItem: value,
-    onChange: (sel) => onChange?.(sel as Item),
-    itemToString: (item) => (item as Item)?.value.toString() || "",
+    onChange: sel => onChange?.(sel as Item),
+    itemToString: item => (item as Item)?.value.toString() || ""
   });
   return (
     <Box position="relative" ref={menuRef}>
@@ -84,9 +83,9 @@ const Select: React.FC<SelectProps> = memo((props) => {
               color: inputColor,
               borderStyle: "solid",
               borderWidth: 1,
-              fontSize: 12,
+              fontSize: 12
             }}
-            onChange={(e) => {
+            onChange={e => {
               setInputValue(e.target.value);
             }}
             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -179,7 +178,7 @@ const Select: React.FC<SelectProps> = memo((props) => {
                   fontWeight:
                     (selectedItem as Item)?.value === item.value
                       ? "bold"
-                      : "normal",
+                      : "normal"
                 }}
               >
                 {label}

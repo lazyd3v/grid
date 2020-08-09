@@ -92,14 +92,14 @@ const useFilter = ({
   offset = 20,
   getValue,
   frozenRows = 0,
-  frozenColumns = 0,
+  frozenColumns = 0
 }: FilterProps): FilterResults => {
   const [filterCell, setFilterCell] = useState<CellInterface | null>(null);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [currentFilter, setCurrentFilter] = useState<FilterState | null>(null);
   const [position, setPosition] = useState<CellPosition>({
     x: 0,
-    y: 0,
+    y: 0
   });
   const FilterComponent = useMemo(() => {
     return getFilterComponent(filterCell);
@@ -130,7 +130,7 @@ const useFilter = ({
       const isFrozenRow = coords.rowIndex < frozenRows;
 
       /* Set cell position */
-      setPosition((prev) => {
+      setPosition(prev => {
         const left = pos.x as number;
         const top = pos.y as number;
         const cellWidth = pos.width as number;
@@ -148,7 +148,7 @@ const useFilter = ({
                 cellWidth -
                 (isFrozenColumn ? 0 : scrollPosition.scrollLeft) -
                 width,
-          y: top - (isFrozenRow ? 0 : scrollPosition.scrollTop) + offset,
+          y: top - (isFrozenRow ? 0 : scrollPosition.scrollTop) + offset
         };
       });
 
@@ -202,7 +202,7 @@ const useFilter = ({
   return {
     filterComponent,
     showFilter: handleShowFilter,
-    hideFilter,
+    hideFilter
   };
 };
 

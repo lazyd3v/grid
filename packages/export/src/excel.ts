@@ -8,7 +8,7 @@ import ExcelJS, {
   CellHyperlinkValue,
   CellRichTextValue,
   ErrorValue,
-  CellSharedFormulaValue,
+  CellSharedFormulaValue
 } from "exceljs";
 import {
   Sheet,
@@ -20,13 +20,13 @@ import {
   VERTICAL_ALIGNMENT,
   DEFAULT_ROW_COUNT,
   DEFAULT_COLUMN_COUNT,
-  dotArray,
+  dotArray
 } from "@rowsncolumns/spreadsheet";
 import {
   CellInterface,
   getBoundedCells,
   cellIdentifier,
-  isNull,
+  isNull
 } from "@rowsncolumns/grid";
 import { DATATYPES } from "@rowsncolumns/spreadsheet";
 
@@ -107,7 +107,7 @@ const getCellText = (
     }
     case ValueType.RichText:
       return (cell.value as CellRichTextValue).richText
-        .map((value) => value.text)
+        .map(value => value.text)
         .join(" ");
     default:
       return cell.value?.toString();
@@ -116,7 +116,7 @@ const getCellText = (
 
 const parseFormulaError = (cell: ExcelJS.Cell): string | undefined => {
   const values = Object.values(ErrorValue);
-  return values.find((val) => {
+  return values.find(val => {
     return val === (cell.value as CellFormulaValue).result;
   });
 };
@@ -148,11 +148,11 @@ export const hasBorder = (cell: CellConfig) =>
  * @param param0
  */
 export const parseExcel = async ({
-  file,
+  file
 }: ParseProps): Promise<ParseResults> => {
   let resolver: (value: ParseResults) => void | null;
   const sheetPromise: Promise<ParseResults> = new Promise(
-    (resolve) => (resolver = resolve)
+    resolve => (resolver = resolve)
   );
   const wb = new ExcelJS.Workbook();
   const reader = new FileReader();
@@ -166,7 +166,7 @@ export const parseExcel = async ({
     const workbook = await wb.xlsx.load(buffer);
 
     /* Walk each sheet */
-    workbook.eachSheet((sheet) => {
+    workbook.eachSheet(sheet => {
       if (sheet.state === "hidden") {
         return;
       }
@@ -181,7 +181,7 @@ export const parseExcel = async ({
         hiddenColumns: [],
         filterViews: [],
         rowCount: Math.max(DEFAULT_ROW_COUNT, sheet.rowCount),
-        columnCount: Math.max(DEFAULT_COLUMN_COUNT, sheet.columns.length),
+        columnCount: Math.max(DEFAULT_COLUMN_COUNT, sheet.columns.length)
       };
       const mergedCellMap = new Map();
       if (sheet.hasMerges) {
@@ -209,8 +209,8 @@ export const parseExcel = async ({
               top: topBound?.rowIndex,
               left: topBound?.columnIndex,
               right: bottomBound?.columnIndex,
-              bottom: bottomBound?.rowIndex,
-            },
+              bottom: bottomBound?.rowIndex
+            }
           });
         }
       }
@@ -255,7 +255,7 @@ export const parseExcel = async ({
 
           const currentCell: CellInterface = {
             rowIndex: rowId,
-            columnIndex: j,
+            columnIndex: j
           };
           /* Check if its a merged cell */
           const isMerged = isMergedCell(currentCell);
@@ -373,7 +373,7 @@ export const parseExcel = async ({
             result,
             ...strokes,
             ...fontConfig,
-            ...attributes,
+            ...attributes
           };
         }
       }
@@ -382,7 +382,7 @@ export const parseExcel = async ({
     });
 
     resolver({
-      sheets,
+      sheets
     });
   };
   /* Start reading the file */
@@ -408,7 +408,7 @@ export const createExcelFileFromSheets = async (
       frozenRows = 0,
       mergedCells = [],
       hiddenRows = [],
-      hiddenColumns = [],
+      hiddenColumns = []
     } = sheet;
     const rowCount = Math.max(0, ...Object.keys(cells ?? {}).map(Number));
     const workSheet = workbook.addWorksheet(name);
@@ -417,7 +417,7 @@ export const createExcelFileFromSheets = async (
     workSheet.views.push({
       state: viewState,
       xSplit: frozenColumns,
-      ySplit: frozenRows,
+      ySplit: frozenRows
     });
 
     // Merged cells
@@ -426,23 +426,23 @@ export const createExcelFileFromSheets = async (
         const cur = mergedCells[i];
         const topLeft = cellToAddress({
           rowIndex: cur.top,
-          columnIndex: cur.left,
+          columnIndex: cur.left
         });
         const bottomRight = cellToAddress({
           rowIndex: cur.bottom,
-          columnIndex: cur.right,
+          columnIndex: cur.right
         });
         workSheet.mergeCells(`${topLeft}:${bottomRight}`);
       }
     }
     // hidden rows
     if (hiddenRows.length) {
-      hiddenRows.forEach((id) => (workSheet.getRow(id).hidden = true));
+      hiddenRows.forEach(id => (workSheet.getRow(id).hidden = true));
     }
 
     // hidden columns
     if (hiddenColumns.length) {
-      hiddenColumns.forEach((id) => (workSheet.getColumn(id).hidden = true));
+      hiddenColumns.forEach(id => (workSheet.getColumn(id).hidden = true));
     }
 
     /* Create cells */
@@ -497,7 +497,7 @@ export const createExcelFileFromSheets = async (
           // Color
           if (cell.color) {
             newCell.font.color = {
-              argb: "FF" + removeHex(cell.color),
+              argb: "FF" + removeHex(cell.color)
             };
           }
 
@@ -507,11 +507,11 @@ export const createExcelFileFromSheets = async (
               type: "pattern",
               pattern: "solid",
               bgColor: {
-                argb: "FF" + removeHex(cell.fill),
+                argb: "FF" + removeHex(cell.fill)
               },
               fgColor: {
-                argb: "FF" + removeHex(cell.fill),
-              },
+                argb: "FF" + removeHex(cell.fill)
+              }
             };
           }
           // Border
@@ -522,32 +522,32 @@ export const createExcelFileFromSheets = async (
               newCell.border.top = {
                 style: "thin",
                 color: {
-                  argb: "FF" + removeHex(cell.strokeTopColor),
-                },
+                  argb: "FF" + removeHex(cell.strokeTopColor)
+                }
               };
             }
             if (cell.strokeBottomWidth && cell.strokeBottomColor) {
               newCell.border.bottom = {
                 style: "thin",
                 color: {
-                  argb: "FF" + removeHex(cell.strokeBottomColor),
-                },
+                  argb: "FF" + removeHex(cell.strokeBottomColor)
+                }
               };
             }
             if (cell.strokeLeftWidth && cell.strokeLeftColor) {
               newCell.border.left = {
                 style: "thin",
                 color: {
-                  argb: "FF" + removeHex(cell.strokeLeftColor),
-                },
+                  argb: "FF" + removeHex(cell.strokeLeftColor)
+                }
               };
             }
             if (cell.strokeRightWidth && cell.strokeRightColor) {
               newCell.border.right = {
                 style: "thin",
                 color: {
-                  argb: "FF" + removeHex(cell.strokeRightColor),
-                },
+                  argb: "FF" + removeHex(cell.strokeRightColor)
+                }
               };
             }
           }

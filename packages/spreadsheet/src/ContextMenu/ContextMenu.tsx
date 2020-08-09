@@ -6,7 +6,7 @@ import {
   MenuDivider,
   useColorMode,
   theme,
-  useTheme,
+  useTheme
 } from "@chakra-ui/core";
 import { MdContentCut, MdContentCopy, MdContentPaste } from "react-icons/md";
 import { ContextMenuProps } from "../Grid/Grid";
@@ -51,7 +51,7 @@ const ContextMenu: React.FC<ContextMenuComponentProps> = ({
   onPaste,
   activeCell,
   selections,
-  onRequestClose,
+  onRequestClose
 }) => {
   const theme = useTheme();
   const { colorMode } = useColorMode();

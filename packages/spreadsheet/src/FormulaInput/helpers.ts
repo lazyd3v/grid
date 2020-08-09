@@ -30,7 +30,7 @@ export const getSelectionColorAtIndex = (key: number) => {
     "#880e4f",
     "#827717",
     "#f7981d", // orange
-    "#7e3794",
+    "#7e3794"
   ];
   var str = key.toString();
   for (let i = 0; i < str.length; i++) {
@@ -51,8 +51,8 @@ export const selectionFromCells = (
       top: Math.min(start.rowIndex, end.rowIndex),
       left: start.columnIndex,
       right: end.columnIndex,
-      bottom: Math.max(start.rowIndex, end.rowIndex),
-    },
+      bottom: Math.max(start.rowIndex, end.rowIndex)
+    }
   };
 };
 

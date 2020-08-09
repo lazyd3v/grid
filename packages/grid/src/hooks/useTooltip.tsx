@@ -3,7 +3,7 @@ import React, {
   useState,
   useMemo,
   useRef,
-  useEffect,
+  useEffect
 } from "react";
 import { CellInterface, GridRef } from "../Grid";
 import { debounce, throttle } from "../helpers";
@@ -51,7 +51,7 @@ export interface DefaultTooltipProps {
 
 const DefaultTooltipComponent: React.FC<DefaultTooltipProps> = ({
   x = 0,
-  y = 0,
+  y = 0
 }) => {
   return (
     <div
@@ -65,7 +65,7 @@ const DefaultTooltipComponent: React.FC<DefaultTooltipProps> = ({
         boxShadow: "0 4px 8px 3px rgba(60,64,67,.15)",
         padding: 12,
         borderRadius: 4,
-        fontSize: 13,
+        fontSize: 13
       }}
     >
       {x}
@@ -77,7 +77,7 @@ const getDefaultTooltip = () => DefaultTooltipComponent;
 
 const useTooltip = ({
   gridRef,
-  getTooltip = getDefaultTooltip,
+  getTooltip = getDefaultTooltip
 }: TooltipOptions): TooltipResults => {
   const [activeCell, setActiveCell] = useState<CellInterface | null>(null);
   const isTooltipActive = useRef(false);
@@ -131,7 +131,7 @@ const useTooltip = ({
     const scrollPosition = gridRef.current.getScrollPosition();
     setTooltipPosition({
       ...pos,
-      ...scrollPosition,
+      ...scrollPosition
     });
     setActiveCell({ rowIndex, columnIndex });
   }, []);
@@ -159,7 +159,7 @@ const useTooltip = ({
   return {
     tooltipComponent,
     onMouseMove: mouseMoveThrottler.current,
-    onMouseLeave: mouseLeaveThrottler.current,
+    onMouseLeave: mouseLeaveThrottler.current
   };
 };
 

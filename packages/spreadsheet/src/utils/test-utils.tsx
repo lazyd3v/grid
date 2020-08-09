@@ -10,7 +10,7 @@ const KonvaWrapper = ({ children }) => {
   );
 };
 
-const konvaRenderer = (ui) => render(ui, { wrapper: KonvaWrapper });
+const konvaRenderer = ui => render(ui, { wrapper: KonvaWrapper });
 
 export * from "@testing-library/react";
 export { konvaRenderer };

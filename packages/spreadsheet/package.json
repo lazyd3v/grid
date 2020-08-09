@@ -33,6 +33,9 @@
     "react-konva": "^16.13.0-3",
     "react-list": "^0.8.15",
     "react-use-measure": "^2.0.1",
+    "slate": "^0.58.4",
+    "slate-history": "^0.58.4",
+    "slate-react": "^0.58.4",
     "ssf": "^0.11.2",
     "tiny-invariant": "^1.1.0",
     "webfontloader": "^1.6.28"

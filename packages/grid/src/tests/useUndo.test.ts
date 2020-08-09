@@ -18,7 +18,7 @@ describe("useUndo", () => {
     const { result } = renderHook(() => useUndo({}));
     const patch: PatchInterface<Patch> = {
       patches: [{ op: "replace", value: "b", path: ["hello"] }],
-      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }],
+      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }]
     };
 
     act(() => {
@@ -31,7 +31,7 @@ describe("useUndo", () => {
     const { result } = renderHook(() => useUndo({}));
     const patch: PatchInterface<Patch> = {
       patches: [{ op: "replace", value: "b", path: ["hello"] }],
-      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }],
+      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }]
     };
 
     act(() => {
@@ -51,7 +51,7 @@ describe("useUndo", () => {
     const { result } = renderHook(() => useUndo({ onUndo, onRedo }));
     const patch: PatchInterface<Patch> = {
       patches: [{ op: "replace", value: "b", path: ["hello"] }],
-      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }],
+      inversePatches: [{ op: "replace", value: "a", path: ["hello"] }]
     };
 
     act(() => {

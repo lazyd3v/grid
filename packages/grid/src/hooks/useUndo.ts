@@ -40,7 +40,7 @@ const useUndo = <T>(props: UndoProps = {}): UndoManager => {
   const { enableGlobalKeyHandlers, onRedo, onUndo } = props;
   const undoStack = useRef<PatchInterface<T>[]>([]);
   const undoStackPointer = useRef<number>(-1);
-  const [_, forceRender] = useReducer((s) => s + 1, 0);
+  const [_, forceRender] = useReducer(s => s + 1, 0);
 
   useEffect(() => {
     if (enableGlobalKeyHandlers)
@@ -100,7 +100,7 @@ const useUndo = <T>(props: UndoProps = {}): UndoManager => {
     add: addUndoable,
     onKeyDown: enableGlobalKeyHandlers ? undefined : handleKeyDown,
     canUndo: !(undoStackPointer.current < 0),
-    canRedo: !(undoStackPointer.current === undoStack.current.length - 1),
+    canRedo: !(undoStackPointer.current === undoStack.current.length - 1)
   };
 };
 

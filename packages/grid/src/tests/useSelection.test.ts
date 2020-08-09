@@ -13,11 +13,11 @@ describe("useSelection", () => {
 
   it("picks up initialselection", () => {
     const initialSelections = [
-      { bounds: { top: 0, left: 0, right: 0, bottom: 0 } },
+      { bounds: { top: 0, left: 0, right: 0, bottom: 0 } }
     ];
     const { result } = renderHook(() =>
       useSelection({
-        initialSelections,
+        initialSelections
       })
     );
     expect(result.current.selections).toStrictEqual(initialSelections);

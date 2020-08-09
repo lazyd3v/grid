@@ -79,13 +79,12 @@ const usePagination = (props: PaginationProps): PaginationResults => {
     pageSize = 10,
     total = 0,
     onChange,
-    component = PaginationComponent,
+    component = PaginationComponent
   } = props;
   const [currentPage, setCurrentPage] = useState<number>(initialCurrentPage);
   const totalPages = Math.ceil(total / pageSize);
-  const nextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
   const goToFirst = () => setCurrentPage(1);
   const goToLast = () => setCurrentPage(totalPages);
   const goToPage = (page: number) => setCurrentPage(page);
@@ -102,14 +101,14 @@ const usePagination = (props: PaginationProps): PaginationResults => {
     goToFirst,
     goToLast,
     goToPage,
-    pageSize,
+    pageSize
   };
 
   const paginationComponent = React.createElement(component, pageProps);
 
   return {
     paginationComponent,
-    ...pageProps,
+    ...pageProps
   };
 };
 
@@ -120,7 +119,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
   goToPage,
   totalPages,
   nextPage,
-  prevPage,
+  prevPage
 }) => {
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {

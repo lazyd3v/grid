@@ -7,7 +7,7 @@ import {
   extendAreaToMergedCells,
   areaIntersects,
   findNextContentfulCell,
-  findLastContentfulCell,
+  findLastContentfulCell
 } from "../helpers";
 import { Direction } from "../types";
 
@@ -22,7 +22,7 @@ describe("getBoundedCells", () => {
       top: 1,
       right: 5,
       left: 1,
-      bottom: 5,
+      bottom: 5
     });
     expect(cells.has(cellIdentifier(1, 1))).toBeTruthy();
     expect(cells.has(cellIdentifier(5, 5))).toBeTruthy();
@@ -35,7 +35,7 @@ describe("getEstimatedTotalWidth", () => {
     const instanceProps = {
       lastMeasuredColumnIndex: -1,
       columnMetadataMap: {},
-      estimatedColumnWidth: 30,
+      estimatedColumnWidth: 30
     };
 
     expect(getEstimatedTotalWidth(columnCount, instanceProps)).toBe(6000);
@@ -48,14 +48,14 @@ describe("getEstimatedTotalWidth", () => {
       columnMetadataMap: {
         0: {
           offset: 0,
-          size: 20,
+          size: 20
         },
         1: {
           offset: 20,
-          size: 70,
-        },
+          size: 70
+        }
       },
-      estimatedColumnWidth: 30,
+      estimatedColumnWidth: 30
     };
 
     expect(getEstimatedTotalWidth(columnCount, instanceProps)).toBe(6030);
@@ -68,7 +68,7 @@ describe("getEstimatedTotalHeight", () => {
     const instanceProps = {
       lastMeasuredRowIndex: -1,
       rowMetadataMap: {},
-      estimatedRowHeight: 30,
+      estimatedRowHeight: 30
     };
 
     expect(getEstimatedTotalHeight(rowCount, instanceProps)).toBe(6000);
@@ -81,14 +81,14 @@ describe("getEstimatedTotalHeight", () => {
       rowMetadataMap: {
         0: {
           offset: 0,
-          size: 20,
+          size: 20
         },
         1: {
           offset: 20,
-          size: 70,
-        },
+          size: 70
+        }
       },
-      estimatedRowHeight: 30,
+      estimatedRowHeight: 30
     };
 
     expect(getEstimatedTotalHeight(rowCount, instanceProps)).toBe(5990);
@@ -102,14 +102,14 @@ describe("extendAreaToMergedCells", () => {
         top: 2,
         left: 2,
         right: 5,
-        bottom: 5,
-      },
+        bottom: 5
+      }
     ];
     const originalArea = {
       top: 2,
       left: 1,
       bottom: 2,
-      right: 3,
+      right: 3
     };
     const area = extendAreaToMergedCells(originalArea, mergedCells);
     expect(area.bottom).toBe(5);
@@ -123,13 +123,13 @@ describe("areaIntersects", () => {
       top: 2,
       left: 1,
       right: 3,
-      bottom: 4,
+      bottom: 4
     };
     const area2 = {
       top: 5,
       left: 2,
       bottom: 3,
-      right: 2,
+      right: 2
     };
 
     expect(areaIntersects(area1, area2)).toBeFalsy();
@@ -139,13 +139,13 @@ describe("areaIntersects", () => {
       top: 2,
       left: 1,
       right: 3,
-      bottom: 4,
+      bottom: 4
     };
     const area2 = {
       top: 2,
       left: 2,
       bottom: 3,
-      right: 2,
+      right: 2
     };
 
     expect(areaIntersects(area1, area2)).toBeTruthy();
@@ -199,7 +199,7 @@ describe("findNextContentfulCell", () => {
 
   it("returns next cell with content", () => {
     activeCell = { rowIndex: 1, columnIndex: 2 };
-    const getValue = (cell) => {
+    const getValue = cell => {
       if (cell.rowIndex == 5) return "hello";
       return null;
     };
@@ -218,7 +218,7 @@ describe("findLastContentfulCell", () => {
   let activeCell, cell;
   it("returns last cell if no contentful cell is found", () => {
     activeCell = { rowIndex: 1, columnIndex: 2 };
-    let getValue = (cell) => {
+    let getValue = cell => {
       if (cell.rowIndex === 5) return null;
       return "hello";
     };
@@ -232,7 +232,7 @@ describe("findLastContentfulCell", () => {
     expect(cell.rowIndex).toBe(4);
 
     activeCell = { rowIndex: 20, columnIndex: 2 };
-    getValue = (cell) => {
+    getValue = cell => {
       if (cell.rowIndex === 5) return null;
       return "hello";
     };
@@ -246,7 +246,7 @@ describe("findLastContentfulCell", () => {
     expect(cell.rowIndex).toBe(6);
 
     activeCell = { rowIndex: 1, columnIndex: 2 };
-    getValue = (cell) => {
+    getValue = cell => {
       if (cell.columnIndex === 5) return null;
       return "hello";
     };
@@ -260,7 +260,7 @@ describe("findLastContentfulCell", () => {
     expect(cell.columnIndex).toBe(4);
 
     activeCell = { rowIndex: 1, columnIndex: 20 };
-    getValue = (cell) => {
+    getValue = cell => {
       if (cell.columnIndex === 5) return null;
       return "hello";
     };
@@ -276,7 +276,7 @@ describe("findLastContentfulCell", () => {
 
   it("returns same cell if its already in the edge", () => {
     const activeCell = { rowIndex: 1, columnIndex: 2 };
-    const getValue = (cell) => {
+    const getValue = cell => {
       if (cell.rowIndex === 5) return "hello";
       return null;
     };

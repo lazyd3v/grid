@@ -13,9 +13,9 @@ describe("Grid", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    itemRenderer = jest.fn((props) => <Rect />);
-    columnWidth = jest.fn((index) => 50 + index);
-    rowHeight = jest.fn((index) => 25 + index);
+    itemRenderer = jest.fn(props => <Rect />);
+    columnWidth = jest.fn(index => 50 + index);
+    rowHeight = jest.fn(index => 25 + index);
   });
 
   test("renders the grid", () => {

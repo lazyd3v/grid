@@ -4,10 +4,9 @@ import React, {
   useRef,
   memo,
   useState,
-  useCallback,
+  useCallback
 } from "react";
 import { KeyCodes, Direction } from "@rowsncolumns/grid";
-import Downshift from "downshift";
 import { Box, useTheme, useColorMode } from "@chakra-ui/core";
 import { DARK_MODE_COLOR } from "../constants";
 import useShiftDown from "./../hooks/useShiftDown";
@@ -59,15 +58,15 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
       items,
       onMouseMove,
       onMouseDown,
-      onClick,
+      onClick
     } = useShiftDown({
       initialInputValue: initialValue,
       initialIsOpen: true,
       initialSelectedItem: initialValue,
       options,
-      onChange: (item) => {
+      onChange: item => {
         onSubmit?.(item as string);
-      },
+      }
     });
 
     useEffect(() => {
@@ -113,7 +112,7 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
               color: color,
               whiteSpace: "pre-wrap",
               textAlign: horizontalAlign,
-              lineHeight: "14px",
+              lineHeight: "14px"
             }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setInputValue(e.target.value);
@@ -194,7 +193,7 @@ const ListEditor: React.FC<ListEditorProps & RefAttribute> = memo(
                         ? isLight
                           ? theme.colors.gray[100]
                           : "rgba(255,255,255,0.06)"
-                        : dropdownBgColor,
+                        : dropdownBgColor
                   }}
                 >
                   {item}
