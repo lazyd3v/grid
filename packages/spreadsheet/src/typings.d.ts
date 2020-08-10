@@ -13,6 +13,10 @@ declare module "fast-formula-parser/grammar/lexing" {
   }
   export interface Token {
     image: string;
+    startOffset: number;
+    index: number;
+    range?: boolean;
+    sel?: any;
     tokenType: {
       name: string;
     };

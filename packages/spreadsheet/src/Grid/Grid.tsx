@@ -37,7 +37,7 @@ import Grid, {
   Selection
 } from "@rowsncolumns/grid";
 import { debounce, cellIdentifier } from "@rowsncolumns/grid";
-import { ThemeProvider, ColorModeProvider } from "@chakra-ui/core";
+import { ThemeProvider, ColorModeProvider, usePrevious } from "@chakra-ui/core";
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
@@ -50,8 +50,8 @@ import {
   ROW_HEADER_WIDTH,
   COLUMN_HEADER_HEIGHT,
   DEFAULT_CELL_PADDING,
-  CELL_BORDER_WIDTH,
-  cellToAddress
+  cellToAddress,
+  isAFormula
 } from "./../constants";
 import HeaderCell from "./../HeaderCell";
 import Cell from "./../Cell";
@@ -61,7 +61,7 @@ import { Direction } from "@rowsncolumns/grid";
 import { AXIS, Formatter, SELECTION_MODE } from "../types";
 import Editor from "./../Editor";
 import { EditorProps } from "@rowsncolumns/grid";
-import { CustomEditorProps } from "../Editor/Editor";
+import { CustomEditorProps, EditableRef } from "../Editor/Editor";
 import FilterComponent from "./../FilterComponent";
 import { FILTER_ICON_DIM } from "../FilterIcon/FilterIcon";
 import { ContextMenuComponentProps } from "../ContextMenu/ContextMenu";
@@ -71,6 +71,7 @@ import {
   getSelectionColorAtIndex,
   getSelectionsFromInput
 } from "./../FormulaInput/helpers";
+import isEqual from "lodash.isequal";
 
 const EMPTY_ARRAY: any = [];
 const EMPTY_OBJECT: any = {};
@@ -192,6 +193,10 @@ export interface GridProps {
   onCopy?: (selections: SelectionArea[]) => void;
   selectionBackgroundColor?: string;
   selectionBorderColor?: string;
+  isFormulaMode: boolean;
+  setFormulaMode: (value: boolean) => void;
+  isFormulaInputActive?: boolean;
+  supportedFormulas?: string[];
 }
 
 export interface RowColSelection {
@@ -205,6 +210,8 @@ export type RefAttributeGrid = {
 
 export interface ExtraEditorProps {
   selectedSheetName?: string;
+  isFormulaMode?: boolean;
+  supportedFormulas?: string[];
 }
 
 export type WorkbookGridRef = {
@@ -234,6 +241,8 @@ export type WorkbookGridRef = {
   getScrollPosition?: () => ScrollCoords;
   getCellCoordsFromOffset?: (x: number, y: number) => CellInterface | null;
   getCellOffsetFromCoords?: (coords: CellInterface) => CellPosition;
+  getEditingCell: () => CellInterface | undefined;
+  getEditingSheetId: () => SheetID | undefined;
 };
 
 export interface ContextMenuProps {
@@ -312,7 +321,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       onChangeSelectedSheet,
       onCopy,
       selectionBackgroundColor = "rgb(14, 101, 235, 0.1)",
-      selectionBorderColor = "#1a73e8"
+      selectionBorderColor = "#1a73e8",
+      isFormulaMode,
+      setFormulaMode,
+      isFormulaInputActive,
+      supportedFormulas = EMPTY_ARRAY
     } = props;
 
     const gridRef = useRef<GridRef | null>(null);
@@ -321,11 +334,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const rowCount = initialRowCount + 1;
     const columnCount = initialColumnCount + 1;
     const currentlyEditingSheetId = useRef<SheetID>();
-    const editorRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(
-      null
-    );
+    const editorRef = useRef<EditableRef>(null);
     const editingCellRef = useRef<CellInterface>();
-    const [isFormulaMode, setFormulaMode] = useState(false);
 
     /**
      * Keep track of variables in `refs` cos we bound events to `document`
@@ -434,6 +444,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         setActiveCell,
         setSelections,
         focus: () => gridRef.current?.focus(),
+        getEditingCell: () => editingCellRef.current,
+        getEditingSheetId: () => currentlyEditingSheetId.current,
         resetAfterIndices: gridRef.current?.resetAfterIndices,
         makeEditable,
         setEditorValue: setValue,
@@ -741,15 +753,31 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       }
     });
 
+    const prevSelections = usePrevious(selections);
+
+    /* Focus on the editor */
     const focusEditor = useCallback(() => {
       requestAnimationFrame(() => editorRef.current?.focus());
     }, []);
 
+    /* Focus on the editor */
+    const updateFormulaEditor = useCallback(
+      (sel: SelectionArea | undefined) => {
+        // editorRef.current?.updateSelection?.(sel)
+      },
+      []
+    );
+
     useEffect(() => {
-      if (isFormulaMode) {
+      if (
+        isFormulaMode &&
+        !isFormulaInputActive &&
+        !isEqual(selections, prevSelections)
+      ) {
         focusEditor();
+        updateFormulaEditor(selections[selections.length - 1]);
       }
-    }, [selections, isFormulaMode]);
+    }, [selections, isFormulaMode, isFormulaInputActive]);
 
     /**
      * Copy paste
@@ -867,6 +895,10 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       if (activeCell?.rowIndex === 0 || activeCell?.columnIndex === 0) {
         return;
       }
+      /* Lets not change formula bar input if user is in formula mode */
+      if (isFormulaMode) {
+        return;
+      }
       onActiveCellChange?.(activeCell, getValue(activeCell)?.text);
     }, [activeCell]);
 
@@ -874,12 +906,16 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
      * Save it back to sheet
      */
     useEffect(() => {
+      /* Skip if formula mode */
+      if (isFormulaMode) {
+        return;
+      }
       /* Batch this cos of debounce */
       onSheetChangeRef.current?.({ activeCell, selections });
 
       /* Callback */
       onSelectionChange?.(activeCell, selections);
-    }, [selections, activeCell]);
+    }, [selections, activeCell, isFormulaMode]);
 
     /**
      * If grid changes, lets restore the state
@@ -910,7 +946,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       /* Hide editor */
 
       if (isFormulaMode) {
-        editorRef.current?.focus();
+        focusEditor();
       } else {
         hideEditor();
       }
@@ -938,9 +974,12 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           setActiveCell(nextActiveCell, true);
         }
 
-        /* Resize if height has changed: Skip merged cells */
+        /**
+         * Resize if height has changed: Skip merged cells
+         * Skip for formula cell too
+         */
         const isMergedCell = gridRef.current?.isMergedCell(cell);
-        if (!isMergedCell) {
+        if (!isMergedCell && !isFormulaMode) {
           const { rowIndex } = cell;
           const height =
             rowSizes[rowIndex] ??
@@ -1037,11 +1076,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const handleActiveCellValueChange = useCallback(
       (value: string, cell: CellInterface) => {
         onActiveCellValueChange?.(value, cell);
-        const isFormula = castToString(value)?.startsWith("=");
+        const isFormula = isAFormula(value);
         setFormulaMode(!!isFormula);
         if (isFormula) {
-          const sel = getSelectionsFromInput(value);
-          setSelections(sel);
+          // const sel = getSelectionsFromInput(value);
+          // setSelections(sel);
         }
       },
       []
@@ -1081,7 +1120,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       },
       editorProps: (): ExtraEditorProps => {
         return {
-          selectedSheetName: sheetName
+          selectedSheetName: sheetName,
+          isFormulaMode,
+          supportedFormulas
         };
       },
       getEditor: (cell: CellInterface | null) => {
@@ -1444,7 +1485,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           ? "gray"
           : isFormulaMode
           ? isActiveCell
-            ? selections.length
+            ? selections.length > 0
               ? "transparent"
               : selectionBorderColor
             : getSelectionColorAtIndex(key)
@@ -1460,7 +1501,14 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           : selectionBackgroundColor;
 
         const strokeWidth = isFill ? 1 : isFormulaMode || isActiveCell ? 2 : 1;
-        const strokeStyle = isFill || isFormulaMode ? "dashed" : "solid";
+        const strokeStyle = isFill
+          ? "dashed"
+          : isFormulaMode
+          ? isActiveCell && selections.length === 0
+            ? "solid"
+            : "dashed"
+          : "solid";
+
         return (
           <Selection
             {...props}

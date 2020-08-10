@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useMemo } from "react";
 import CalcEngine, {
   CellConfig as CalcCellConfig,
   CellConfigGetter as CalcCellConfigGetter
@@ -71,9 +71,9 @@ const useCalc = ({ formulas, getCellConfig }: UseCalcOptions) => {
     );
   }, []);
 
-  const getSupportedFormulas = useCallback(() => {
+  const supportedFormulas: string[] = useMemo(() => {
     return engine.current?.parser.formulaParser.supportedFunctions() ?? [];
-  }, []);
+  }, [engine.current]);
 
   const getDepedencies = useCallback((text: string) => {
     return engine.current?.parser.getDependencies(text);
@@ -83,7 +83,7 @@ const useCalc = ({ formulas, getCellConfig }: UseCalcOptions) => {
     onCalculate,
     onCalculateBatch,
     initializeEngine,
-    getSupportedFormulas,
+    supportedFormulas,
     getDepedencies
   };
 };

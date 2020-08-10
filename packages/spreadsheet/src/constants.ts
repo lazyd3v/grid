@@ -39,6 +39,8 @@ export const FORMAT_CURRENCY = "$0.00";
 export const FORMAT_DEFAULT_DECIMAL = "0.0";
 export const SYSTEM_FONT =
   "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji";
+export const FORMULA_FONT = "Inconsolata,monospace,arial,sans,sans-serif";
+export const FORMULA_FONT_SIZE = 13;
 export const INVALID_COLOR = "#FF5621";
 export const ERROR_COLOR = "#C63929";
 export const INFO_COLOR = "#1D72E8";
@@ -648,4 +650,35 @@ export const sanitizeSheetName = (name: string | undefined) => {
   if (name === void 0) return void 0;
   if (name.split(/\s/gi).length > 1) return `'${name}'`;
   return name;
+};
+
+export const isAFormula = (value: React.ReactText) => {
+  return castToString(value)?.startsWith("=");
+};
+
+/**
+ * Used to match `RegExp`
+ * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+ */
+const reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+const reHasRegExpChar = RegExp(reRegExpChar.source);
+
+/**
+ * Escapes the `RegExp` special characters "^", "$", "\", ".", "*", "+",
+ * "?", "(", ")", "[", "]", "{", "}", and "|" in `string`.
+ *
+ * @since 3.0.0
+ * @category String
+ * @param {string} [string=''] The string to escape.
+ * @returns {string} Returns the escaped string.
+ * @see escape, escapeRegExp, unescape
+ * @example
+ *
+ * escapeRegExp('[lodash](https://lodash.com/)')
+ * // => '\[lodash\]\(https://lodash\.com/\)'
+ */
+export const escapeRegExp = (string: string) => {
+  return string && reHasRegExpChar.test(string)
+    ? string.replace(reRegExpChar, "\\$&")
+    : string || "";
 };

@@ -6,7 +6,14 @@ import {
   useColorMode,
   useTheme
 } from "@chakra-ui/core";
-import { DARK_MODE_COLOR, FORMULABAR_LEFT_CORNER_WIDTH } from "./../constants";
+import {
+  DARK_MODE_COLOR,
+  FORMULABAR_LEFT_CORNER_WIDTH,
+  FORMULA_FONT,
+  SYSTEM_FONT,
+  isAFormula,
+  FORMULA_FONT_SIZE
+} from "./../constants";
 
 interface FormulabarProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -14,6 +21,7 @@ interface FormulabarProps {
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   value: string;
+  isFormulaMode: boolean;
 }
 
 export type FormulaRef = {
@@ -22,7 +30,15 @@ export type FormulaRef = {
 
 const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
   forwardRef((props, forwardedRef) => {
-    const { value, onChange, onKeyDown, onFocus, onBlur } = props;
+    const {
+      value,
+      onChange,
+      onKeyDown,
+      onFocus,
+      onBlur,
+      isFormulaMode
+    } = props;
+    const isFormula = isAFormula(value) || isFormulaMode;
     const { colorMode } = useColorMode();
     const theme = useTheme();
     const isLightMode = colorMode === "light";
@@ -73,11 +89,13 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
           onFocus={onFocus}
           height={"100%"}
           lineHeight={1}
-          fontSize={12}
+          fontSize={isFormula ? FORMULA_FONT_SIZE : 12}
           ref={forwardedRef}
+          transition="none"
           _focus={{
             boxShadow: "none"
           }}
+          fontFamily={isFormula ? FORMULA_FONT : SYSTEM_FONT}
         />
       </InputGroup>
     );

@@ -3,21 +3,23 @@ import React, {
   useCallback,
   useEffect,
   useState,
-  useMemo,
   forwardRef
 } from "react";
-import { EditorProps } from "@rowsncolumns/grid/dist/hooks/useEditable";
-import { autoSizerCanvas, Direction } from "@rowsncolumns/grid";
-// import TextEditor from "./Text";
-import TextEditor from "./ContentEditable";
-import ListEditor from "./List";
+import {
+  autoSizerCanvas,
+  Direction,
+  EditorProps,
+  SelectionArea
+} from "@rowsncolumns/grid";
+import TextEditor from "./TextEditor";
 import { useColorMode } from "@chakra-ui/core";
 import {
   DARK_MODE_COLOR_LIGHT,
   DEFAULT_FONT_FAMILY,
-  cellToAddress,
   DEFAULT_CELL_PADDING,
-  sanitizeSheetName
+  sanitizeSheetName,
+  FORMULA_FONT,
+  FORMULA_FONT_SIZE
 } from "../constants";
 import { EditorType } from "../types";
 import { ExtraEditorProps } from "../Grid/Grid";
@@ -35,6 +37,7 @@ export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
   underline?: boolean;
   sheetName?: string;
   address?: string | null;
+  isFormulaMode?: boolean;
   onKeyDown?: (
     e: React.KeyboardEvent<
       HTMLTextAreaElement | HTMLInputElement | HTMLDivElement
@@ -43,9 +46,12 @@ export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
 }
 
 export type RefAttribute = {
-  ref?: React.Ref<
-    HTMLTextAreaElement | HTMLInputElement | HTMLDivElement | null
-  >;
+  ref?: React.Ref<EditableRef>;
+};
+
+export type EditableRef = {
+  focus: () => void;
+  updateSelection?: (sel: SelectionArea) => void;
 };
 
 /**
@@ -80,6 +86,8 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       address,
       selectedSheetName,
       onKeyDown,
+      isFormulaMode,
+      supportedFormulas,
       ...rest
     } = props;
     const wrapping: any = cellWrap === "wrap" ? "wrap" : "nowrap";
@@ -104,8 +112,8 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       text => {
         /*  Set font */
         textSizer.current.setFont({
-          fontSize,
-          fontFamily,
+          fontSize: isFormulaMode ? FORMULA_FONT_SIZE : fontSize,
+          fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
           scale
         });
 
@@ -115,11 +123,14 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
         } = textSizer.current.measureText(text);
 
         return [
-          Math.max(measuredWidth + padding, width + borderWidth / 2),
+          Math.max(
+            measuredWidth + (isFormulaMode ? padding + 2 : padding),
+            width + borderWidth / 2
+          ),
           Math.max(measuredHeight + DEFAULT_CELL_PADDING + borderWidth, height)
         ];
       },
-      [width, height, fontSize, fontFamily, wrapping, scale]
+      [width, height, fontSize, fontFamily, wrapping, scale, isFormulaMode]
     );
 
     /* Keep updating value of input */
@@ -203,7 +214,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           </div>
         ) : null}
         <TextEditor
-          ref={forwardedRef as React.MutableRefObject<HTMLDivElement>}
+          ref={forwardedRef}
           value={value}
           fontFamily={fontFamily}
           fontSize={fontSize}
@@ -217,6 +228,9 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           onCancel={handleCancel}
           onKeyDown={onKeyDown}
           options={options}
+          isFormulaMode={isFormulaMode}
+          autoFocus={autoFocus}
+          supportedFormulas={supportedFormulas}
         />
       </div>
     );

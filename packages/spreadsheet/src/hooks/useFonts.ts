@@ -6,7 +6,13 @@ export interface UseFontResults {
   isFontActive: boolean;
 }
 
-const useFonts = (config?: WebFont.Config) => {
+const defaultConfig: WebFont.Config = {
+  google: {
+    families: ["Inconsolata"]
+  }
+};
+
+const useFonts = (config: WebFont.Config = defaultConfig) => {
   const [isFontActive, setIsFontActive] = useState(false);
   useEffect(() => {
     if (config && WebFont !== null) {

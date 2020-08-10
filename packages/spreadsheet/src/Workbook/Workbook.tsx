@@ -125,6 +125,10 @@ export interface WorkbookProps
   onChangeTabColor?: (id: SheetID, color?: string) => void;
   StatusBar: React.ReactType;
   scale?: number;
+  isFormulaMode: boolean;
+  setFormulaMode: (value: boolean) => void;
+  isFormulaInputActive?: boolean;
+  supportedFormulas?: string[];
 }
 
 export type WorkBookRefAttribute = {
@@ -190,7 +194,11 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
       columnHeaderHeight,
       gridLineColor,
       gridBackgroundColor,
-      onCopy
+      onCopy,
+      isFormulaMode,
+      setFormulaMode,
+      isFormulaInputActive,
+      supportedFormulas
     } = props;
 
     const { colorMode } = useColorMode();
@@ -411,6 +419,10 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
             gridBackgroundColor={gridBackgroundColor}
             sheetName={sheetName}
             onChangeSelectedSheet={onChangeSelectedSheet}
+            isFormulaMode={isFormulaMode}
+            setFormulaMode={setFormulaMode}
+            isFormulaInputActive={isFormulaInputActive}
+            supportedFormulas={supportedFormulas}
           />
         </Flex>
         {showTabStrip || showStatusBar ? (

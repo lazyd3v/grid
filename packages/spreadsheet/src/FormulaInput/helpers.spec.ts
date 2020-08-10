@@ -1,4 +1,4 @@
-import { getSelectionsFromInput } from "./helpers";
+import { getSelectionsFromInput, normalizeTokens } from "./helpers";
 
 describe("Extract cell selection from raw text", () => {
   it("exists", () => {
@@ -21,3 +21,5 @@ describe("Extract cell selection from raw text", () => {
   //   expect(selections.length).toBe(1);
   // });
 });
+
+describe("normalizeTokens", () => {});

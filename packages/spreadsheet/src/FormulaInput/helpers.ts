@@ -1,5 +1,9 @@
-import { lex, tokenVocabulary } from "fast-formula-parser/grammar/lexing";
-import { addressToCell } from "./../constants";
+import {
+  lex,
+  tokenVocabulary,
+  Token
+} from "fast-formula-parser/grammar/lexing";
+import { addressToCell, cellToAddress } from "./../constants";
 import { CellInterface, SelectionArea } from "@rowsncolumns/grid";
 
 export const TOKEN_TYPE_CELL = "Cell";
@@ -56,6 +60,16 @@ export const selectionFromCells = (
   };
 };
 
+export const selectionToAddress = (
+  sel: SelectionArea | undefined
+): string | null => {
+  if (!sel) return null;
+  const { top, left, right, bottom } = sel.bounds;
+  const from = cellToAddress({ rowIndex: top, columnIndex: left });
+  const to = cellToAddress({ rowIndex: bottom, columnIndex: right });
+  return from === to ? from : `${from}:${to}`;
+};
+
 export const getSelectionsFromInput = (text: string) => {
   const selections = [];
   try {
@@ -92,3 +106,55 @@ export const getSelectionsFromInput = (text: string) => {
     return selections;
   }
 };
+
+export const normalizeTokens = (text: string | undefined) => {
+  const normalizedTokens: Token[] = [];
+  if (text === void 0) return normalizedTokens;
+  try {
+    const { tokens } = lex(text);
+    let len = tokens.length;
+    let i = 0;
+    let selIndex = -1;
+    while (i < len) {
+      const token = tokens[i];
+      const { image, tokenType } = token;
+      let toImage;
+      if (tokenType.name === tokenVocabulary.Cell.name) {
+        let startCell = addressToCell(image);
+        if (!startCell) {
+          i++;
+          continue;
+        }
+        let endCell;
+        // Check if its a range
+        const isRange =
+          tokens[i + 1]?.tokenType.name === tokenVocabulary.Colon.name;
+        if (isRange) {
+          toImage = tokens[i + 2]?.image;
+          endCell = addressToCell(toImage);
+        }
+        const sel = selectionFromCells(startCell, endCell);
+        normalizedTokens.push({
+          ...token,
+          image: isRange ? `${image}:${toImage}` : image,
+          index: ++selIndex,
+          range: isRange,
+          sel: sel
+        });
+        if (isRange) {
+          i = i + 3;
+          continue;
+        }
+      } else {
+        normalizedTokens.push(token);
+      }
+      i++;
+    }
+
+    return normalizedTokens;
+  } catch (err) {
+    return normalizedTokens;
+  }
+};
+
+export { tokenVocabulary };

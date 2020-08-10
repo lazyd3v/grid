@@ -93,14 +93,14 @@ const useShiftDown = (props: ShiftDownProps) => {
       }
       if (keyCode === KeyCodes.Up) {
         setHighlightedIndex(prev => {
-          const next = (prev || 0) - 1;
+          const next = prev === null ? filteredItems.length - 1 : prev - 1;
           if (next < 0) return filteredItems.length - 1;
           return next;
         });
         event?.preventDefault();
       } else if (keyCode === KeyCodes.Down) {
         setHighlightedIndex(prev => {
-          const next = (prev || 0) + 1;
+          const next = prev === null ? 0 : prev + 1;
           if (next > filteredItems.length - 1) return 0;
           return next;
         });
