@@ -68,7 +68,7 @@ const useCopyPaste = ({
   onPaste,
   onCut,
   onCopy,
-  getText = defaultGetText,
+  getText = defaultGetText
 }: CopyProps): CopyResults => {
   const selectionRef = useRef({ selections, activeCell, getValue });
   const cutSelections = useRef<SelectionArea>();
@@ -123,7 +123,7 @@ const useCopyPaste = ({
         for (let j = left; j <= right; j++) {
           const config = selectionRef.current.getValue({
             rowIndex: i,
-            columnIndex: j,
+            columnIndex: j
           });
           const value = getText(config);
           cell.push(config);
@@ -154,7 +154,7 @@ const useCopyPaste = ({
       MimeType.json,
       MimeType.html,
       MimeType.csv,
-      MimeType.plain,
+      MimeType.plain
     ];
     let type;
     let value;
@@ -237,7 +237,7 @@ const useCopyPaste = ({
   return {
     copy: handleProgramaticCopy,
     paste: handleProgramaticPaste,
-    cut: handleCut,
+    cut: handleCut
   };
 };
 
