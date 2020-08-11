@@ -40,7 +40,7 @@ export const FORMAT_DEFAULT_DECIMAL = "0.0";
 export const SYSTEM_FONT =
   "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji";
 export const FORMULA_FONT = "Inconsolata,monospace,arial,sans,sans-serif";
-export const FORMULA_FONT_SIZE = 13;
+export const FORMULA_FONT_SIZE = 14;
 export const INVALID_COLOR = "#FF5621";
 export const ERROR_COLOR = "#C63929";
 export const INFO_COLOR = "#1D72E8";

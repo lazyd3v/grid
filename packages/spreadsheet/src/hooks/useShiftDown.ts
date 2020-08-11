@@ -5,17 +5,17 @@ import React, {
   useRef,
   useMemo
 } from "react";
-import { KeyCodes } from "@rowsncolumns/grid";
+import { KeyCodes, castToString } from "@rowsncolumns/grid";
 
 export interface ShiftDownProps {
-  initialInputValue?: string;
+  initialInputValue?: React.ReactText;
   initialIsOpen?: boolean;
-  initialSelectedItem?: Item | string;
+  initialSelectedItem?: Item | React.ReactText;
   selectedItem?: Item | string;
   options?: Item[] | string[];
   filterOnInitialOpen?: boolean;
   itemToString?: (item: Item | string) => string;
-  onChange?: (item: Item | string | undefined) => void;
+  onChange?: (item: Item | React.ReactText | undefined) => void;
   filter?: (item: Item | string) => boolean;
 }
 
@@ -46,10 +46,12 @@ const useShiftDown = (props: ShiftDownProps) => {
   const { current: isControlled } = useRef(controlledSelecteditem !== void 0);
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(initialIsOpen);
-  const [inputValue, setInputValue] = useState<string>(initialInputValue);
-  const [selectedItem, setSelectedItem] = useState<Item | string | undefined>(
-    initialSelectedItem
+  const [inputValue, setInputValue] = useState<string>(
+    castToString(initialInputValue) ?? ""
   );
+  const [selectedItem, setSelectedItem] = useState<
+    Item | React.ReactText | undefined
+  >(initialSelectedItem);
   const menuRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLElement | HTMLInputElement>(null);
   const isDirty = useRef<boolean>(false);

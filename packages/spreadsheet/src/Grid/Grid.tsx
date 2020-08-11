@@ -1007,6 +1007,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const handleEditorCancel = useCallback(
       (e?: React.KeyboardEvent<any>) => {
         if (isFormulaMode) {
+          /* Switch to new sheet */
+          if (currentlyEditingSheetId.current !== void 0) {
+            onChangeSelectedSheet?.(currentlyEditingSheetId.current);
+          }
+
           if (
             editingCellRef.current &&
             e?.nativeEvent.keyCode === KeyCodes.Escape

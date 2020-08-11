@@ -19,7 +19,8 @@ import {
   clampIndex,
   HiddenType,
   autoSizerCanvas,
-  isArrowKey
+  isArrowKey,
+  castToString
 } from "../helpers";
 
 export interface UseEditableOptions {
@@ -200,7 +201,7 @@ export interface EditorProps {
   /**
    * Initial value of the cell
    */
-  value?: string;
+  value?: React.ReactText;
   /**
    * Callback when a value has changed.
    */
@@ -296,7 +297,7 @@ const DefaultEditor: React.FC<EditorProps> = props => {
     if (!inputRef.current) return;
     if (autoFocus) inputRef.current.focus();
     /* Focus cursor at the end */
-    inputRef.current.selectionStart = value.length;
+    inputRef.current.selectionStart = castToString(value)?.length ?? 0;
   }, []);
   const inputHeight = height;
   return (

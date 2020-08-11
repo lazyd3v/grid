@@ -906,6 +906,7 @@ export const AutoSizerCanvas = (defaults: AutoSizerProps = {}) => {
   };
 };
 
+/* Export a singleton */
 export const autoSizerCanvas = AutoSizerCanvas();
 
 /* Check if a value is null */

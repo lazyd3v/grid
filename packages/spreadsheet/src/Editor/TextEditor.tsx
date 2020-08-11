@@ -17,14 +17,19 @@ import {
 } from "slate";
 import { Slate, Editable, withReact, ReactEditor } from "slate-react";
 import { withHistory } from "slate-history";
-import { Direction, KeyCodes, SelectionArea } from "@rowsncolumns/grid";
+import {
+  Direction,
+  KeyCodes,
+  SelectionArea,
+  castToString
+} from "@rowsncolumns/grid";
 import useShiftDown from "../hooks/useShiftDown";
 import { useColorMode, useTheme, Box } from "@chakra-ui/core";
-import { DARK_MODE_COLOR, FORMULA_FONT } from "../constants";
+import { DARK_MODE_COLOR, FORMULA_FONT, FORMULA_FONT_SIZE } from "../constants";
 import { normalizeTokens, tokenVocabulary } from "./../FormulaInput/helpers";
 
 export interface EditableProps {
-  value: string;
+  value?: React.ReactText;
   onChange: (value: string) => void;
   onSubmit: (value: string, direction?: Direction) => void;
   onCancel: (e: React.KeyboardEvent<HTMLDivElement>) => void;
@@ -77,8 +82,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       ...rest
     } = props;
     const [target, setTarget] = useState<Range | undefined>();
-    const serialize = useCallback((value: string): Node[] => {
-      return value.split("\n").map((line: string) => {
+    const serialize = useCallback((value?: React.ReactText): Node[] => {
+      return (castToString(value) ?? "").split("\n").map((line: string) => {
         return {
           children: [
             {
@@ -87,6 +92,14 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           ]
         };
       });
+    }, []);
+    const deserialize = useCallback((value: Node[]) => {
+      return value
+        .map(element => {
+          // @ts-ignore
+          return element.children.map(leaf => leaf.text).join("\n");
+        })
+        .join("\n");
     }, []);
     useImperativeHandle(
       forwardedRef,
@@ -102,14 +115,6 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       },
       []
     );
-    const deserialize = useCallback((value: Node[]) => {
-      return value
-        .map(element => {
-          // @ts-ignore
-          return element.children.map(leaf => leaf.text).join("\n");
-        })
-        .join("\n");
-    }, []);
     const [value, setValue] = useState<Node[]>(() => serialize(initialValue));
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const moveToEnd = useCallback(() => {
@@ -196,7 +201,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         <div
           style={{
             fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
-            fontSize: (isFormulaMode ? 13 : fontSize) * scale,
+            fontSize: (isFormulaMode ? FORMULA_FONT_SIZE : fontSize) * scale,
             width: "100%",
             height: "100%",
             padding: "0 1px",
@@ -213,7 +218,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             textAlign: isFormulaMode ? "left" : horizontalAlign,
             lineHeight: "normal",
             textDecoration: underline ? "underline" : "none",
-            cursor: "text"
+            cursor: "text",
+            flex: 1
           }}
         >
           <Slate

@@ -3,7 +3,8 @@ import React, {
   useCallback,
   useEffect,
   useState,
-  forwardRef
+  forwardRef,
+  useMemo
 } from "react";
 import {
   autoSizerCanvas,
@@ -124,7 +125,10 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
 
         return [
           Math.max(
-            measuredWidth + (isFormulaMode ? padding + 2 : padding),
+            measuredWidth +
+              (isFormulaMode
+                ? padding + 8 /* Letter spacing for inconsolata */
+                : padding),
             width + borderWidth / 2
           ),
           Math.max(measuredHeight + DEFAULT_CELL_PADDING + borderWidth, height)
@@ -175,6 +179,10 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
     const handleCancel = (e?: React.KeyboardEvent<any>) => {
       onCancel?.(e);
     };
+    const dropdownOptions = useMemo(() => {
+      if (editorType === "list") return options;
+      return [];
+    }, [editorType, options]);
     return (
       <div
         style={{
@@ -227,7 +235,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           onKeyDown={onKeyDown}
-          options={options}
+          options={dropdownOptions}
           isFormulaMode={isFormulaMode}
           autoFocus={autoFocus}
           supportedFormulas={supportedFormulas}
