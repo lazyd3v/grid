@@ -44,12 +44,12 @@ Born out of frustration, having to deal with complicated imperative canvas libra
 
 #### npm
 ```
-yarn add @rowsncolumns/grid
+npm install @rowsncolumns/grid --save
 ```
 #### yarn
 
 ```
-npm install @rowsncolumns/grid --save
+yarn add @rowsncolumns/grid
 ```
 
 ## Compatiblity
