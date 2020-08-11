@@ -330,12 +330,6 @@ exports[`SpreadSheet matches snapshot 1`] = `
             >
               24
             </div>
-            <div
-              class="css-15f4sd9"
-              style="cursor: pointer; background-color: rgb(255, 255, 255); font-weight: normal;"
-            >
-              36
-            </div>
           </div>
         </div>
         <div

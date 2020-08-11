@@ -70,7 +70,7 @@ import TooltipComponent, { TooltipProps } from "./../Tooltip";
 import {
   getSelectionColorAtIndex,
   getSelectionsFromInput
-} from "./../FormulaInput/helpers";
+} from "./../formulas/helpers";
 import isEqual from "lodash.isequal";
 
 const EMPTY_ARRAY: any = [];
@@ -952,6 +952,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       }
     }, [selectedSheet]);
 
+    /**
+     * When user submits the cell editor
+     */
     const handleSubmit = useCallback(
       (
         value: React.ReactText,
@@ -961,6 +964,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         if (currentlyEditingSheetId.current === void 0) {
           return;
         }
+
         /* Switch to new sheet */
         if (isFormulaMode) {
           onChangeSelectedSheet?.(currentlyEditingSheetId.current);

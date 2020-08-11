@@ -1369,7 +1369,10 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         const currentlyEditingCell = currentGrid.current?.getEditingCell();
         const currentlyEditingSheetId = currentGrid.current?.getEditingSheetId();
-        if (!currentlyEditingCell || !currentlyEditingSheetId) {
+        if (
+          currentlyEditingCell === void 0 ||
+          currentlyEditingSheetId === void 0
+        ) {
           return;
         }
         if (e.which === KeyCodes.Enter) {
@@ -1948,6 +1951,14 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
             }
             .rowsncolumns-grid-container:focus {
               outline: none;
+            }
+            .insert-range-indicator {
+              background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjMiIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlOiNjY2MiPjxwYXRoIGQ9Ik0wLjUgMEwwLjUgM00wIDIuNUw4IDIuNU03LjUgM0w3LjUgMCIvPjwvc3ZnPg==)
+                bottom no-repeat;
+              background-size: contain;
+              width: 8px;
+              cursor: default;
+              display: inline-block;
             }
           `}
         />

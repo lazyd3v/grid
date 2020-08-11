@@ -17,6 +17,9 @@ declare module "fast-formula-parser/grammar/lexing" {
     index: number;
     range?: boolean;
     sel?: any;
+    endOffset: number;
+    endColumn: number;
+    startColumn: number;
     tokenType: {
       name: string;
     };

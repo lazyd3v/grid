@@ -137,20 +137,21 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       [width, height, fontSize, fontFamily, wrapping, scale, isFormulaMode]
     );
 
+    /* Width of the input  */
+    const [inputDims, setInputDims] = useState(() => getInputDims(value));
+    const [inputWidth, inputHeight] = inputDims;
+
     /* Keep updating value of input */
     useEffect(() => {
       setInputDims(getInputDims(value));
     }, [value]);
-
-    /* Width of the input  */
-    const [inputDims, setInputDims] = useState(() => getInputDims(value));
-    const [inputWidth, inputHeight] = inputDims;
 
     /* Tracks scroll position: To show address token */
     useEffect(() => {
       if (!isMounted.current) return;
       hasScrollPositionChanged.current = true;
     }, [scrollPosition]);
+
     useEffect(() => {
       if (hasSheetChanged.current) return;
       if (selectedSheetName !== sheetName) hasSheetChanged.current = true;

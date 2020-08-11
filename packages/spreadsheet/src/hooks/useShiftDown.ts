@@ -17,6 +17,9 @@ export interface ShiftDownProps {
   itemToString?: (item: Item | string) => string;
   onChange?: (item: Item | React.ReactText | undefined) => void;
   filter?: (item: Item | string) => boolean;
+  defaultHighlightedIndex?: number | null;
+  showAllIfEmpty?: boolean;
+  limit?: number;
 }
 
 export interface Item {
@@ -36,15 +39,20 @@ const useShiftDown = (props: ShiftDownProps) => {
     initialInputValue = "",
     initialIsOpen = false,
     initialSelectedItem,
+    showAllIfEmpty = true,
     options = [],
     filterOnInitialOpen = false,
     itemToString = defaultItemToString,
     onChange,
     filter,
-    selectedItem: controlledSelecteditem
+    defaultHighlightedIndex = null,
+    selectedItem: controlledSelecteditem,
+    limit = 10
   } = props;
   const { current: isControlled } = useRef(controlledSelecteditem !== void 0);
-  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(
+    defaultHighlightedIndex
+  );
   const [isOpen, setIsOpen] = useState<boolean>(initialIsOpen);
   const [inputValue, setInputValue] = useState<string>(
     castToString(initialInputValue) ?? ""
@@ -59,7 +67,7 @@ const useShiftDown = (props: ShiftDownProps) => {
   const handleSetSelectedItem = useCallback(
     (item: Item | string | undefined) => {
       setSelectedItem(item);
-      setInputValue(itemToString(item ?? ""));
+      handleSetInputValue(itemToString(item ?? ""));
     },
     []
   );
@@ -69,21 +77,26 @@ const useShiftDown = (props: ShiftDownProps) => {
     if (controlledSelecteditem === selectedItem) {
       return;
     }
-    setInputValue(itemToString(controlledSelecteditem ?? ""));
+    handleSetInputValue(itemToString(controlledSelecteditem ?? ""));
   }, [isControlled, controlledSelecteditem, selectedItem]);
 
   const filteredItems = useMemo(() => {
-    return (options as any[]).filter(item => {
-      if (
-        !inputValue ||
-        (!isDirty.current && !filterOnInitialOpen && inputValue)
-      )
-        return true;
-      if (filter) return filter(item);
-      const key = typeof item === "object" ? item.value || item.label : item;
-      return new RegExp(inputValue, "gi").test(key);
-    });
-  }, [inputValue, options, filter]);
+    if (!inputValue && !showAllIfEmpty) {
+      return [];
+    }
+    return (options as any[])
+      .filter(item => {
+        if (
+          !inputValue ||
+          (!isDirty.current && !filterOnInitialOpen && inputValue)
+        )
+          return true;
+        if (filter) return filter(item);
+        const key = typeof item === "object" ? item.value || item.label : item;
+        return new RegExp("^" + inputValue, "gi").test(key);
+      })
+      .slice(0, limit);
+  }, [inputValue, options, filter, showAllIfEmpty]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<any>) => {
@@ -99,25 +112,22 @@ const useShiftDown = (props: ShiftDownProps) => {
           if (next < 0) return filteredItems.length - 1;
           return next;
         });
-        event?.preventDefault();
+        e?.preventDefault();
       } else if (keyCode === KeyCodes.Down) {
         setHighlightedIndex(prev => {
           const next = prev === null ? 0 : prev + 1;
           if (next > filteredItems.length - 1) return 0;
           return next;
         });
-        event?.preventDefault();
-      } else {
-        setHighlightedIndex(null);
+        e?.preventDefault();
       }
       if (keyCode === KeyCodes.Escape) {
         closeMenu();
       }
       if (keyCode === KeyCodes.Enter) {
         if (highlightedIndex !== null) {
-          handleClick(filteredItems[highlightedIndex]);
+          handleSelect(filteredItems[highlightedIndex]);
         }
-        closeMenu();
       }
     },
     [filteredItems, highlightedIndex, isOpen]
@@ -154,13 +164,14 @@ const useShiftDown = (props: ShiftDownProps) => {
     event.preventDefault();
   }, []);
 
-  const handleClick = useCallback((item: Item | string) => {
+  const handleSelect = useCallback((item: Item | string) => {
     setSelectedItem(item);
-    setInputValue(itemToString(item));
+    handleSetInputValue(itemToString(item));
   }, []);
 
   const handleSetInputValue = useCallback((value: string) => {
     setInputValue(value);
+    setHighlightedIndex(defaultHighlightedIndex);
     isDirty.current = true;
   }, []);
 
@@ -215,7 +226,7 @@ const useShiftDown = (props: ShiftDownProps) => {
     items: filteredItems,
     onMouseMove: handleMouseMove,
     onMouseDown: handleMouseDown,
-    onClick: handleClick,
+    onClick: handleSelect,
     onFocus: handleFocus,
     onBlur: handleBlur
   };

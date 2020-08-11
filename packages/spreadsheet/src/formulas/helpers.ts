@@ -67,7 +67,7 @@ export const selectionToAddress = (
   const { top, left, right, bottom } = sel.bounds;
   const from = cellToAddress({ rowIndex: top, columnIndex: left });
   const to = cellToAddress({ rowIndex: bottom, columnIndex: right });
-  return from === to ? from : `${from}:${to}`;
+  return from === to ? from : `${from}:${to || ""}`;
 };
 
 export const getSelectionsFromInput = (text: string) => {
@@ -77,7 +77,8 @@ export const getSelectionsFromInput = (text: string) => {
     let len = tokens.length;
     let i = 0;
     while (i < len) {
-      const { image, tokenType } = tokens[i];
+      const token = tokens[i];
+      const { image, tokenType } = token;
       if (tokenType.name === tokenVocabulary.Cell.name) {
         let startCell = addressToCell(image);
         if (!startCell) {
@@ -136,7 +137,10 @@ export const normalizeTokens = (text: string | undefined) => {
         const sel = selectionFromCells(startCell, endCell);
         normalizedTokens.push({
           ...token,
-          image: isRange ? `${image}:${toImage}` : image,
+          image: isRange ? `${image}:${toImage || ""}` : image,
+          endColumn: isRange
+            ? token.endColumn + `:${toImage || ""}`.length
+            : token.endColumn,
           index: ++selIndex,
           range: isRange,
           sel: sel
@@ -158,3 +162,38 @@ export const normalizeTokens = (text: string | undefined) => {
 };
 
 export { tokenVocabulary };
+
+export const operators = [
+  "MulOp",
+  "PlusOp",
+  "DivOp",
+  "MinOp",
+  "ConcatOp",
+  "ExOp",
+  "MulOp",
+  "PercentOp",
+  "NeqOp",
+  "GteOp",
+  "LteOp",
+  "GtOp",
+  "EqOp",
+  "LtOp"
+];
+
+export const operatorTokenNames = [
+  "At",
+  "Comma",
+  "Cell",
+  "Function",
+  // "Colon",
+  // "Semicolon",
+  "OpenParen",
+  // "CloseParen",
+  // "OpenSquareParen",
+  // "CloseSquareParen",
+  // // ExclamationMark,
+  // "OpenCurlyParen",
+  // "CloseCurlyParen",
+  // "QuoteS",
+  ...operators
+];
