@@ -5,6 +5,8 @@ import {
 } from "fast-formula-parser/grammar/lexing";
 import { addressToCell, cellToAddress } from "./../constants";
 import { CellInterface, SelectionArea } from "@rowsncolumns/grid";
+import { FormulaSelection } from "../Grid/Grid";
+import { SheetID } from "../Spreadsheet";
 
 export const TOKEN_TYPE_CELL = "Cell";
 export const getSelectionColorAtIndex = (key: number) => {
@@ -48,8 +50,8 @@ export const getSelectionColorAtIndex = (key: number) => {
 export const selectionFromCells = (
   start: CellInterface,
   end: CellInterface | null = start,
-  sheetName: string | undefined
-): SelectionArea => {
+  sheetName: SheetID | undefined
+): FormulaSelection => {
   if (!end) end = start;
   return {
     bounds: {
@@ -57,8 +59,8 @@ export const selectionFromCells = (
       left: start.columnIndex,
       right: end.columnIndex,
       bottom: Math.max(start.rowIndex, end.rowIndex)
-    }
-    // sheet: sheetName,
+    },
+    sheet: sheetName
   };
 };
 
@@ -72,7 +74,10 @@ export const selectionToAddress = (
   return from === to ? from : `${from}:${to || ""}`;
 };
 
-export const getSelectionsFromInput = (text: string) => {
+export const getSelectionsFromInput = (
+  text: string,
+  sheet: SheetID | undefined
+) => {
   const selections = [];
   try {
     const { tokens } = lex(text);
@@ -104,7 +109,7 @@ export const getSelectionsFromInput = (text: string) => {
           const toImage = tokens[i + 2]?.image;
           endCell = addressToCell(toImage);
         }
-        const sheetName = activeSheet?.image;
+        const sheetName = activeSheet?.image.slice(0, -1) || sheet;
         const sel = selectionFromCells(startCell, endCell, sheetName);
         selections.push(sel);
         if (isRange) {

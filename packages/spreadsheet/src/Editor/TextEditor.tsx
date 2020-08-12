@@ -28,7 +28,8 @@ import {
   Direction,
   KeyCodes,
   SelectionArea,
-  castToString
+  castToString,
+  NewSelectionMode
 } from "@rowsncolumns/grid";
 import useShiftDown from "../hooks/useShiftDown";
 import { useColorMode, useTheme, Box } from "@chakra-ui/core";
@@ -41,7 +42,8 @@ import {
 import {
   normalizeTokens,
   tokenVocabulary,
-  getSelectionColorAtIndex
+  getSelectionColorAtIndex,
+  selectionToAddress
 } from "./../formulas/helpers";
 import { Token } from "fast-formula-parser/grammar/lexing";
 import { current } from "immer";
@@ -55,6 +57,8 @@ import {
   isCurrentPositionACell,
   cleanFunctionToken
 } from "./helpers";
+import { SheetID } from "../Spreadsheet";
+import ReactDOM from "react-dom";
 
 export interface EditableProps {
   value?: React.ReactText;
@@ -82,7 +86,11 @@ export type RefAttribute = {
 
 export type EditableRef = {
   focus: () => void;
-  updateSelection?: (sel: SelectionArea) => void;
+  updateSelection?: (
+    sheetName: SheetID | undefined,
+    sel: SelectionArea,
+    mode: NewSelectionMode
+  ) => void;
 };
 
 /**
@@ -129,7 +137,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
     const [cursorToken, setCursorSuggestionToken] = useState<
       Point | undefined
     >();
-    const [target, setTarget] = useState<Range | undefined>();
+    const [target, setTarget] = useState<Token | undefined>();
     const serialize = useCallback(
       (value?: React.ReactText): Node[] => {
         return (castToString(value) ?? "").split("\n").map((line: string) => {
@@ -150,6 +158,34 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         .join("\n");
     }, []);
 
+    const handleUpdateSelection = useCallback(
+      (sheetName, sel: SelectionArea | undefined, mode: NewSelectionMode) => {
+        const cellAddress = selectionToAddress(sel);
+        if (!cellAddress) {
+          return;
+        }
+        const address = `${sheetName ? sheetName + "!" : ""}${cellAddress}`;
+        const start = getCurrentCursorOffset(editor);
+        if (mode === "modify" && target && start) {
+          const startToken = {
+            ...start,
+            offset: target.startOffset
+          };
+
+          Transforms.delete(editor, {
+            at: start,
+            distance: target.image.length,
+            reverse: true
+          });
+        }
+        if (address) {
+          Transforms.insertNodes(editor, [{ text: address }]);
+          ReactEditor.focus(editor);
+        }
+      },
+      [target]
+    );
+
     /**
      * Expose ref methods
      */
@@ -158,14 +194,14 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       () => {
         return {
           focus: () => {
-            ReactEditor.focus(editor);
+            requestAnimationFrame(() => {
+              ReactEditor.focus(editor);
+            });
           },
-          updateSelection: (sel: SelectionArea | undefined) => {
-            // console.log("called", suggestionToken);
-          }
+          updateSelection: handleUpdateSelection
         };
       },
-      []
+      [target]
     );
     const [value, setValue] = useState<Node[]>(() => serialize(initialValue));
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -336,52 +372,59 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             editor={editor}
             value={value}
             onChange={value => {
-              setValue(value);
-              const isFormula = isAFormula(deserialize(value));
-              if (isFormula) {
-                const start = getCurrentCursorOffset(editor);
-                if (!start) {
-                  return;
-                }
-                const from = Editor.before(editor, start, { unit: "line" });
-                const end =
-                  Editor.after(editor, start, { unit: "line" }) || start;
-                if (!from) {
-                  return;
-                }
-                const range = Editor.range(editor, from, end);
-                const line = Editor.string(editor, range);
-                const tokens = normalizeTokens(line);
-                const fnToken = functionSuggestion(tokens, editor);
-                const curToken = getCurrentToken(tokens, editor);
-                const showFnSuggestions = !!fnToken;
-                const showCellSuggestion = showCellSuggestions(editor, tokens);
-                const isCell = isCurrentPositionACell(editor, tokens);
-                const isNewCell = !isCurrentPositionACell(editor, tokens);
-                const cellTokenIndex = showCellSuggestion
-                  ? curToken
-                    ? isNewCell
-                      ? curToken?.endColumn
-                      : curToken?.startOffset
-                    : getCurrentCursorOffset(editor)?.offset
-                  : null;
-                if (showFnSuggestions) {
-                  setSuggestionToken(fnToken);
-                  setInputValue(cleanFunctionToken(fnToken?.image ?? ""));
-                } else {
-                  setSuggestionToken(void 0);
-                  setInputValue("");
-                }
+              ReactDOM.unstable_batchedUpdates(() => {
+                setValue(value);
+                const isFormula = isAFormula(deserialize(value));
+                if (isFormula) {
+                  const start = getCurrentCursorOffset(editor);
+                  if (!start) {
+                    return;
+                  }
+                  const from = Editor.before(editor, start, { unit: "line" });
+                  const end =
+                    Editor.after(editor, start, { unit: "line" }) || start;
+                  if (!from) {
+                    return;
+                  }
+                  const range = Editor.range(editor, from, end);
+                  const line = Editor.string(editor, range);
+                  const tokens = normalizeTokens(line);
+                  const fnToken = functionSuggestion(tokens, editor);
+                  const curToken = getCurrentToken(tokens, editor);
+                  const showFnSuggestions = !!fnToken;
+                  const showCellSuggestion = showCellSuggestions(
+                    editor,
+                    tokens
+                  );
+                  const isCell = isCurrentPositionACell(editor, tokens);
+                  const isNewCell = !isCurrentPositionACell(editor, tokens);
+                  const cellTokenIndex = showCellSuggestion
+                    ? curToken
+                      ? isNewCell
+                        ? curToken?.endColumn
+                        : curToken?.startOffset
+                      : getCurrentCursorOffset(editor)?.offset
+                    : null;
+                  if (showFnSuggestions) {
+                    setSuggestionToken(fnToken);
+                    setInputValue(cleanFunctionToken(fnToken?.image ?? ""));
+                  } else {
+                    setSuggestionToken(void 0);
+                    setInputValue("");
+                  }
 
-                onFormulaChange?.({
-                  showCellSuggestion,
-                  newSelectionMode: showCellSuggestion ? "append" : "modify"
-                });
+                  setTarget(curToken);
 
-                setCursorSuggestionToken(
-                  showCellSuggestion ? getCurrentCursorOffset(editor) : void 0
-                );
-              }
+                  onFormulaChange?.({
+                    showCellSuggestion: !!showCellSuggestion || !!isCell,
+                    newSelectionMode: showCellSuggestion ? "append" : "modify"
+                  });
+
+                  setCursorSuggestionToken(
+                    showCellSuggestion ? getCurrentCursorOffset(editor) : void 0
+                  );
+                }
+              });
             }}
           >
             <Editable
@@ -441,7 +484,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             />
           </Slate>
         </div>
-        {isOpen ? (
+        {isOpen && items.length ? (
           <Box
             ref={menuRef}
             width="auto"

@@ -10,7 +10,8 @@ import {
   autoSizerCanvas,
   Direction,
   EditorProps,
-  SelectionArea
+  SelectionArea,
+  NewSelectionMode
 } from "@rowsncolumns/grid";
 import TextEditor from "./TextEditor";
 import { useColorMode } from "@chakra-ui/core";
@@ -24,6 +25,7 @@ import {
 } from "../constants";
 import { EditorType } from "../types";
 import { ExtraEditorProps } from "../Grid/Grid";
+import { SheetID } from "../Spreadsheet";
 
 export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
   background?: string;
@@ -52,7 +54,11 @@ export type RefAttribute = {
 
 export type EditableRef = {
   focus: () => void;
-  updateSelection?: (sel?: SelectionArea) => void;
+  updateSelection?: (
+    sheetName: SheetID | undefined,
+    sel: SelectionArea | undefined,
+    mode: NewSelectionMode
+  ) => void;
 };
 
 /**

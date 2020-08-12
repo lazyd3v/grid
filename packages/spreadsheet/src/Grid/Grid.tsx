@@ -35,7 +35,9 @@ import Grid, {
   KeyCodes,
   SelectionProps,
   Selection,
-  NewSelectionMode
+  NewSelectionMode,
+  rafThrottle,
+  throttle
 } from "@rowsncolumns/grid";
 import { debounce, cellIdentifier } from "@rowsncolumns/grid";
 import { ThemeProvider, ColorModeProvider, usePrevious } from "@chakra-ui/core";
@@ -219,12 +221,11 @@ export interface ExtraEditorProps {
 export interface FormulaChangeProps {
   showCellSuggestion?: boolean;
   newSelectionMode: NewSelectionMode;
-  selections?: FormulaSelection[];
 }
 
 export interface FormulaSelection {
-  sheet: SheetID;
-  selection: SelectionArea;
+  sheet?: SheetID;
+  bounds: AreaProps;
 }
 
 export type WorkbookGridRef = {
@@ -347,16 +348,24 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const rowCount = initialRowCount + 1;
     const columnCount = initialColumnCount + 1;
     const currentlyEditingSheetId = useRef<SheetID>();
+    const currentlyEditingSheetName = useRef<SheetID>();
     const editorRef = useRef<EditableRef>(null);
     const editingCellRef = useRef<CellInterface>();
+    const isFormulaModeRef = useRef<boolean>(false);
     const [formulaState, setFormulaState] = useState<FormulaChangeProps>(() => {
       return {
         newSelectionMode: "modify",
-        showCellSuggestion: false,
-        selections: []
+        showCellSuggestion: false
       };
     });
+    const [formulaSelections, setFormulaSelections] = useState<
+      FormulaSelection[]
+    >([]);
     const { newSelectionMode, showCellSuggestion } = formulaState;
+
+    useEffect(() => {
+      isFormulaModeRef.current = isFormulaMode;
+    }, [isFormulaMode]);
 
     /**
      * Keep track of variables in `refs` cos we bound events to `document`
@@ -727,7 +736,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
      * Selection
      */
     const {
-      selections,
+      selections: gridSelections,
       activeCell,
       setActiveCell,
       setActiveCellState,
@@ -773,8 +782,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         return true;
       }
     });
-
-    const prevSelections = usePrevious(selections);
+    /* Previous gridSelection */
+    const prevSelections = usePrevious(gridSelections);
 
     /* Focus on the editor */
     const focusEditor = useCallback(() => {
@@ -783,22 +792,36 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
 
     /* Focus on the editor */
     const updateFormulaEditor = useCallback(
-      (sel: SelectionArea | undefined) => {
-        editorRef.current?.updateSelection?.(sel);
+      (sel: SelectionArea | undefined, newSelectionMode: NewSelectionMode) => {
+        const name =
+          selectedSheet !== currentlyEditingSheetId.current
+            ? sheetName
+            : void 0;
+        editorRef.current?.updateSelection?.(name, sel, newSelectionMode);
       },
-      []
+      [selectedSheet, sheetName]
     );
+    /* Throttler */
+    const updateFormulaEditorThrottle = useRef<(...a: any[]) => void>();
+
+    useEffect(() => {
+      updateFormulaEditorThrottle.current = throttle(updateFormulaEditor, 200);
+    }, [updateFormulaEditor]);
 
     useEffect(() => {
       if (
         isFormulaMode &&
         !isFormulaInputActive &&
-        !isEqual(selections, prevSelections)
+        !isEqual(gridSelections, prevSelections)
       ) {
-        focusEditor();
-        updateFormulaEditor(selections[selections.length - 1]);
+        updateFormulaEditorThrottle.current?.(
+          gridSelections[gridSelections.length - 1],
+          formulaState.newSelectionMode
+        );
       }
-    }, [selections, isFormulaMode, isFormulaInputActive]);
+    }, [gridSelections, isFormulaMode, isFormulaInputActive, formulaState]);
+
+    const selections = isFormulaMode ? formulaSelections : gridSelections;
 
     /**
      * Copy paste
@@ -1031,7 +1054,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
 
     const handleEditorCancel = useCallback(
       (e?: React.KeyboardEvent<any>) => {
-        if (isFormulaMode) {
+        if (isFormulaModeRef.current) {
           /* Switch to new sheet */
           if (currentlyEditingSheetId.current !== void 0) {
             onChangeSelectedSheet?.(currentlyEditingSheetId.current);
@@ -1109,11 +1132,14 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const isFormula = isAFormula(value);
         setFormulaMode(!!isFormula);
         if (isFormula) {
-          const sel = getSelectionsFromInput(value);
-          setSelections(sel);
+          const sel = getSelectionsFromInput(
+            value,
+            currentlyEditingSheetName.current
+          );
+          setFormulaSelections(sel);
         }
       },
-      []
+      [sheetName]
     );
 
     const handleFormulaChange = useCallback((props: FormulaChangeProps) => {
@@ -1174,6 +1200,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const address = cellToAddress(cell);
         /* Update active sheet */
         currentlyEditingSheetId.current = selectedSheet;
+        currentlyEditingSheetName.current = sheetName;
 
         return (props: EditorProps) => (
           <CellEditor
@@ -1520,6 +1547,17 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const { type, key } = props;
         const isFill = type === "fill";
         const isActiveCell = type === "activeCell";
+        const isSelection = type === "selection";
+
+        /* if the selection does not belong in this sheet */
+        if (
+          isFormulaMode &&
+          isSelection &&
+          (selections[key] as FormulaSelection).sheet !== sheetName
+        ) {
+          return null;
+        }
+
         const stroke = isFill
           ? "gray"
           : isFormulaMode
@@ -1560,6 +1598,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         );
       },
       [
+        sheetName,
         isFormulaMode,
         selections,
         selectionBorderColor,

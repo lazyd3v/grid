@@ -123,7 +123,7 @@ const useShiftDown = (props: ShiftDownProps): ShiftDownResults => {
       const keyCode = e.nativeEvent.which;
       if (keyCode === KeyCodes.Up || keyCode === KeyCodes.Down) {
         if (!isOpen) {
-          return setIsOpen(true);
+          return openMenu();
         }
       }
       if (keyCode === KeyCodes.Up) {
