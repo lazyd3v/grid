@@ -58,6 +58,9 @@ function Home() {
         pb={10}
       >
         <Box justifyContent="center" display="flex" flexDirection="column">
+          <Box background='red' borderRadius={5} color='white' p={2} fontSize={14} mb={2}>
+            UPDATE: Now with Formula Support
+          </Box>
           <Text as="h1" fontSize="4xl" fontWeight="bold" mb={2}>
             SpreadSheet Grid
           </Text>
@@ -73,6 +76,7 @@ function Home() {
               Supports row, column freezing, autofilter views, cell styling and
               formatting etc
             </ListItem>
+            <ListItem>Formulas with Cross-sheet references</ListItem>
             <ListItem fontWeight="bold" textDecoration="underline">
               <a href="#features">View features</a>
             </ListItem>

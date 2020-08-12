@@ -124,5 +124,5 @@ export const App2 = () => {
 Multi-selection mode allows user to select multiple cells and selections when user is in formula mode.
 
 :::note
-Multi-selection in Formula mode is currently under development. 
+Multi-selection in Formula mode is currently in beta
 :::
