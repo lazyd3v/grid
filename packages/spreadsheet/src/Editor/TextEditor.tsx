@@ -146,6 +146,7 @@ export const showCellSuggestions = (
   ) {
     return false;
   }
+
   return prevToken && operatorTokenNames.includes(prevToken.tokenType.name);
 };
 
@@ -440,7 +441,18 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             onChange={value => {
               setValue(value);
               if (isFormulaMode) {
-                const tokens = normalizeTokens(deserialize(value));
+                const start = getCurrentCursorOffset(editor);
+                if (!start) {
+                  return;
+                }
+                const from = Editor.before(editor, start, { unit: "block" });
+                if (!from) {
+                  return;
+                }
+                const range = Editor.range(editor, from, start);
+                const line = Editor.string(editor, range);
+
+                const tokens = normalizeTokens(line);
                 const fnToken = functionSuggestion(tokens, editor);
                 const curToken = getCurrentToken(tokens, editor);
                 const prevToken = getPreviousToken(tokens, editor);
