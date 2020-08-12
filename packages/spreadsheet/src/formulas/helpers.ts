@@ -47,7 +47,8 @@ export const getSelectionColorAtIndex = (key: number) => {
 
 export const selectionFromCells = (
   start: CellInterface,
-  end: CellInterface | null = start
+  end: CellInterface | null = start,
+  sheetName: string | undefined
 ): SelectionArea => {
   if (!end) end = start;
   return {
@@ -57,6 +58,7 @@ export const selectionFromCells = (
       right: end.columnIndex,
       bottom: Math.max(start.rowIndex, end.rowIndex)
     }
+    // sheet: sheetName,
   };
 };
 
@@ -76,9 +78,18 @@ export const getSelectionsFromInput = (text: string) => {
     const { tokens } = lex(text);
     let len = tokens.length;
     let i = 0;
+    let activeSheet = null;
     while (i < len) {
       const token = tokens[i];
       const { image, tokenType } = token;
+      if (
+        tokenType.name === tokenVocabulary.Sheet.name ||
+        tokenType.name === tokenVocabulary.SheetQuoted.name
+      ) {
+        activeSheet = token;
+        i++;
+        continue;
+      }
       if (tokenType.name === tokenVocabulary.Cell.name) {
         let startCell = addressToCell(image);
         if (!startCell) {
@@ -93,12 +104,15 @@ export const getSelectionsFromInput = (text: string) => {
           const toImage = tokens[i + 2]?.image;
           endCell = addressToCell(toImage);
         }
-        const sel = selectionFromCells(startCell, endCell);
+        const sheetName = activeSheet?.image;
+        const sel = selectionFromCells(startCell, endCell, sheetName);
         selections.push(sel);
         if (isRange) {
           i = i + 3;
           continue;
         }
+
+        activeSheet = null;
       }
       i++;
     }
@@ -108,7 +122,7 @@ export const getSelectionsFromInput = (text: string) => {
   }
 };
 
-export const normalizeTokens = (text: string | undefined) => {
+export const normalizeTokens = (text: string | undefined): Token[] => {
   const normalizedTokens: Token[] = [];
   if (text === void 0) return normalizedTokens;
   try {
@@ -116,10 +130,19 @@ export const normalizeTokens = (text: string | undefined) => {
     let len = tokens.length;
     let i = 0;
     let selIndex = -1;
+    let activeSheet: Token | null = null;
     while (i < len) {
       const token = tokens[i];
       const { image, tokenType } = token;
       let toImage;
+      if (
+        tokenType.name === tokenVocabulary.Sheet.name ||
+        tokenType.name === tokenVocabulary.SheetQuoted.name
+      ) {
+        activeSheet = token;
+        i++;
+        continue;
+      }
       if (tokenType.name === tokenVocabulary.Cell.name) {
         let startCell = addressToCell(image);
         if (!startCell) {
@@ -134,21 +157,34 @@ export const normalizeTokens = (text: string | undefined) => {
           toImage = tokens[i + 2]?.image;
           endCell = addressToCell(toImage);
         }
-        const sel = selectionFromCells(startCell, endCell);
+        const sheetName = activeSheet?.image;
+        const sel = selectionFromCells(startCell, endCell, sheetName);
         normalizedTokens.push({
           ...token,
-          image: isRange ? `${image}:${toImage || ""}` : image,
+          image:
+            (activeSheet ? activeSheet.image : "") +
+            (isRange ? `${image}:${toImage || ""}` : image),
           endColumn: isRange
             ? token.endColumn + `:${toImage || ""}`.length
             : token.endColumn,
+          endOffset: isRange
+            ? token.endOffset + `:${toImage || ""}`.length
+            : token.endOffset,
+          startOffset: activeSheet
+            ? activeSheet.startOffset
+            : token.startOffset,
           index: ++selIndex,
+          sheetName,
           range: isRange,
           sel: sel
         });
+
         if (isRange) {
           i = i + 3;
           continue;
         }
+
+        activeSheet = null;
       } else {
         normalizedTokens.push(token);
       }
@@ -162,38 +198,3 @@ export const normalizeTokens = (text: string | undefined) => {
 };
 
 export { tokenVocabulary };
-
-export const operators = [
-  "MulOp",
-  "PlusOp",
-  "DivOp",
-  "MinOp",
-  "ConcatOp",
-  "ExOp",
-  "MulOp",
-  "PercentOp",
-  "NeqOp",
-  "GteOp",
-  "LteOp",
-  "GtOp",
-  "EqOp",
-  "LtOp"
-];
-
-export const operatorTokenNames = [
-  "At",
-  "Comma",
-  "Cell",
-  "Function",
-  // "Colon",
-  // "Semicolon",
-  "OpenParen",
-  // "CloseParen",
-  // "OpenSquareParen",
-  // "CloseSquareParen",
-  // // ExclamationMark,
-  // "OpenCurlyParen",
-  // "CloseCurlyParen",
-  // "QuoteS",
-  ...operators
-];

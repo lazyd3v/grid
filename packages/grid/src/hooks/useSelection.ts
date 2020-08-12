@@ -116,8 +116,13 @@ export interface UseSelectionOptions {
    * Value getter
    */
   getValue: (cell: CellInterface) => React.ReactText | undefined;
-  newSelectionMode?: "clear" | "modify" | "append";
+  /**
+   * New selection mode
+   */
+  newSelectionMode?: NewSelectionMode;
 }
+
+export type NewSelectionMode = "clear" | "modify" | "append";
 
 export interface SelectionResults {
   /**

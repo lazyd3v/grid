@@ -32,16 +32,31 @@ import {
 } from "@rowsncolumns/grid";
 import useShiftDown from "../hooks/useShiftDown";
 import { useColorMode, useTheme, Box } from "@chakra-ui/core";
-import { DARK_MODE_COLOR, FORMULA_FONT, FORMULA_FONT_SIZE } from "../constants";
+import {
+  DARK_MODE_COLOR,
+  FORMULA_FONT,
+  FORMULA_FONT_SIZE,
+  isAFormula
+} from "../constants";
 import {
   normalizeTokens,
   tokenVocabulary,
-  operatorTokenNames,
   getSelectionColorAtIndex
 } from "./../formulas/helpers";
 import { Token } from "fast-formula-parser/grammar/lexing";
 import { current } from "immer";
 import { css } from "@emotion/core";
+import { FormulaChangeProps } from "../Grid/Grid";
+import {
+  getCurrentCursorOffset,
+  functionSuggestion,
+  getCurrentToken,
+  getPreviousToken,
+  getNextToken,
+  showCellSuggestions,
+  isCurrentPositionACell,
+  cleanFunctionToken
+} from "./helpers";
 
 export interface EditableProps {
   value?: React.ReactText;
@@ -60,6 +75,7 @@ export interface EditableProps {
   isFormulaMode?: boolean;
   autoFocus?: boolean;
   supportedFormulas?: string[];
+  onFormulaChange?: (props: FormulaChangeProps) => void;
 }
 
 export type RefAttribute = {
@@ -69,130 +85,6 @@ export type RefAttribute = {
 export type EditableRef = {
   focus: () => void;
   updateSelection?: (sel: SelectionArea) => void;
-};
-
-export const cleanFunctionToken = (text: string) => {
-  return text; //.replace(new RegExp(/\(|\)/, 'gi'), '')
-};
-const CHARS_BOUNDS = ["+", " ", "(", "=", ","];
-// export const shouldShowFunctionSuggestion = (editor: Editor) => {
-//   const { selection } = editor
-//   if (selection && Range.isCollapsed(selection)) {
-//     const [start] = Range.edges(selection)
-//     const charBefore = Editor.before(editor, start, { unit: 'character' })
-//     const range = Editor.range(editor, start, charBefore)
-//     const str = Editor.string(editor, range)
-//     return CHARS_BOUNDS.indexOf(str) !== -1
-//   }
-//   return false
-// }
-
-export const functionSuggestion = (tokens: Token[], editor: Editor) => {
-  const { selection } = editor;
-  if (selection && Range.isCollapsed(selection)) {
-    const [start] = Range.edges(selection);
-    const charBefore = Editor.before(editor, start, { unit: "character" });
-    const range = Editor.range(editor, start, charBefore);
-    const str = Editor.string(editor, range);
-    const token = tokens.find(token => token.endColumn === start.offset);
-    return token &&
-      str !== "(" &&
-      (token.tokenType.name === "Column" ||
-        token.tokenType.name === "Name" ||
-        token.tokenType.name === "Function")
-      ? token
-      : void 0;
-  }
-  return void 0;
-};
-
-export const isTokenACell = (token?: Token | null) => {
-  return (
-    token &&
-    (token.tokenType.name === "Column" || token.tokenType.name === "Cell")
-  );
-};
-
-export const getCurrentCursorOffset = (editor: Editor) => {
-  const { selection } = editor;
-  if (selection && Range.isCollapsed(selection)) {
-    const [start] = Range.edges(selection);
-    return start;
-  }
-  return void 0;
-};
-
-export const showCellSuggestions = (
-  editor: Editor,
-  tokens: Token[],
-  prevToken?: Token,
-  curToken?: Token,
-  nextToken?: Token
-) => {
-  if (
-    nextToken &&
-    ["Number", "Cell", "Comma", "At", "OpenParen", "String"].includes(
-      nextToken.tokenType.name
-    )
-  ) {
-    return false;
-  }
-  const start = getCurrentCursorOffset(editor);
-  if (
-    prevToken &&
-    start &&
-    prevToken.tokenType.name === "Function" &&
-    start.offset <= prevToken.endOffset
-  ) {
-    return false;
-  }
-
-  return prevToken && operatorTokenNames.includes(prevToken.tokenType.name);
-};
-
-export const isCurrentPositionACell = (editor: Editor, tokens: Token[]) => {
-  const token = getCurrentToken(tokens, editor);
-  return isTokenACell(token);
-};
-
-export const getCurrentToken = (tokens: Token[], editor: Editor) => {
-  const { selection } = editor;
-  if (selection && Range.isCollapsed(selection)) {
-    const [start] = Range.edges(selection);
-    return tokens.find(token => token.endColumn === start.offset);
-  }
-  return void 0;
-};
-
-export const getPreviousToken = (
-  tokens: Token[],
-  editor: Editor
-): Token | undefined => {
-  const start = getCurrentCursorOffset(editor);
-  let i = 0;
-  let token;
-  if (start) {
-    while (i < tokens.length) {
-      token = tokens[i];
-      if (token.startColumn > start.offset) {
-        token = tokens[i - 1];
-        break;
-      }
-      i++;
-    }
-    return token;
-  }
-};
-
-export const getNextToken = (
-  tokens: Token[],
-  editor: Editor
-): Token | undefined => {
-  const start = getCurrentCursorOffset(editor);
-  if (!start) return void 0;
-  return tokens.find(token => {
-    return start.offset === token.startOffset;
-  });
 };
 
 export const createSlateChildren = (text: string) => {
@@ -244,6 +136,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       isFormulaMode,
       autoFocus,
       supportedFormulas = [],
+      onFormulaChange,
       ...rest
     } = props;
     const [suggestionToken, setSuggestionToken] = useState<Token>();
@@ -278,7 +171,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             ReactEditor.focus(editor);
           },
           updateSelection: (sel: SelectionArea | undefined) => {
-            console.log("called");
+            // console.log("called", suggestionToken);
           }
         };
       },
@@ -322,11 +215,17 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         if (isFormulaMode && item !== void 0) {
           const text = suggestionToken?.image;
           const start = getCurrentCursorOffset(editor);
+          if (!start) {
+            return;
+          }
+          const startToken = {
+            ...start,
+            offset: suggestionToken?.startOffset ?? 0
+          };
           if (start) {
             Transforms.delete(editor, {
-              at: start,
-              distance: text?.length,
-              reverse: true
+              at: startToken,
+              distance: text?.length
             });
 
             Transforms.insertNodes(editor, [{ text: `${item as string}(` }]);
@@ -440,31 +339,26 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             value={value}
             onChange={value => {
               setValue(value);
-              if (isFormulaMode) {
+              const isFormula = isAFormula(deserialize(value));
+              if (isFormula) {
                 const start = getCurrentCursorOffset(editor);
                 if (!start) {
                   return;
                 }
-                const from = Editor.before(editor, start, { unit: "block" });
+                const from = Editor.before(editor, start, { unit: "line" });
+                const end =
+                  Editor.after(editor, start, { unit: "line" }) || start;
                 if (!from) {
                   return;
                 }
-                const range = Editor.range(editor, from, start);
+                const range = Editor.range(editor, from, end);
                 const line = Editor.string(editor, range);
-
                 const tokens = normalizeTokens(line);
                 const fnToken = functionSuggestion(tokens, editor);
                 const curToken = getCurrentToken(tokens, editor);
-                const prevToken = getPreviousToken(tokens, editor);
-                const nextToken = getNextToken(tokens, editor);
                 const showFnSuggestions = !!fnToken;
-                const showCellSuggestion = showCellSuggestions(
-                  editor,
-                  tokens,
-                  prevToken,
-                  curToken,
-                  nextToken
-                );
+                const showCellSuggestion = showCellSuggestions(editor, tokens);
+                const isCell = isCurrentPositionACell(editor, tokens);
                 const isNewCell = !isCurrentPositionACell(editor, tokens);
                 const cellTokenIndex = showCellSuggestion
                   ? curToken
@@ -473,15 +367,18 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                       : curToken?.startOffset
                     : getCurrentCursorOffset(editor)?.offset
                   : null;
-
-                /* Update input value */
                 if (showFnSuggestions) {
                   setSuggestionToken(fnToken);
-                  setInputValue(fnToken?.image ?? "");
+                  setInputValue(cleanFunctionToken(fnToken?.image ?? ""));
                 } else {
                   setSuggestionToken(void 0);
                   setInputValue("");
                 }
+
+                onFormulaChange?.({
+                  showCellSuggestion,
+                  newSelectionMode: showCellSuggestion ? "append" : "modify"
+                });
 
                 setCursorSuggestionToken(
                   showCellSuggestion ? getCurrentCursorOffset(editor) : void 0

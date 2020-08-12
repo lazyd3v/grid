@@ -20,6 +20,7 @@ declare module "fast-formula-parser/grammar/lexing" {
     endOffset: number;
     endColumn: number;
     startColumn: number;
+    sheetName?: string;
     tokenType: {
       name: string;
     };

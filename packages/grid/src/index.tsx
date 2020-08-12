@@ -2,7 +2,7 @@ import Grid from "./Grid";
 import { CellRenderer, Cell } from "./Cell";
 import {
   CellOverlay,
-  CellRenderer as CellOverlayRenderer,
+  CellRenderer as CellOverlayRenderer
 } from "./CellOverlay";
 import useEditable from "./hooks/useEditable";
 import useSelection from "./hooks/useSelection";
@@ -32,7 +32,7 @@ export {
   useFilter,
   CellOverlayRenderer,
   Image,
-  Selection,
+  Selection
 };
 export default Grid;
 export * from "./Grid";
@@ -41,5 +41,6 @@ export * from "./hooks/useFilter";
 export * from "./hooks/useUndo";
 export * from "./hooks/useTooltip";
 export * from "./hooks/useEditable";
+export * from "./hooks/useSelection";
 export * from "./types";
 export * from "./Image";

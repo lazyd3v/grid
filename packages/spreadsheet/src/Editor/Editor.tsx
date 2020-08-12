@@ -52,7 +52,7 @@ export type RefAttribute = {
 
 export type EditableRef = {
   focus: () => void;
-  updateSelection?: (sel: SelectionArea) => void;
+  updateSelection?: (sel?: SelectionArea) => void;
 };
 
 /**
@@ -89,6 +89,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       onKeyDown,
       isFormulaMode,
       supportedFormulas,
+      onFormulaChange,
       ...rest
     } = props;
     const wrapping: any = cellWrap === "wrap" ? "wrap" : "nowrap";
@@ -240,6 +241,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           isFormulaMode={isFormulaMode}
           autoFocus={autoFocus}
           supportedFormulas={supportedFormulas}
+          onFormulaChange={onFormulaChange}
         />
       </div>
     );

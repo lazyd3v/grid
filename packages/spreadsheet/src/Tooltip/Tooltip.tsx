@@ -66,7 +66,8 @@ const Tooltip: React.FC<TooltipProps> = ({
         fontSize: 13,
         borderLeft: `4px ${variantColor} solid`,
         backfaceVisibility: "hidden",
-        userSelect: "none"
+        userSelect: "none",
+        wordBreak: "break-word"
       }}
       onMouseLeave={onMouseLeave}
       onMouseEnter={onMouseEnter}

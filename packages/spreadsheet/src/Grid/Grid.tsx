@@ -34,7 +34,8 @@ import Grid, {
   isArrowKey,
   KeyCodes,
   SelectionProps,
-  Selection
+  Selection,
+  NewSelectionMode
 } from "@rowsncolumns/grid";
 import { debounce, cellIdentifier } from "@rowsncolumns/grid";
 import { ThemeProvider, ColorModeProvider, usePrevious } from "@chakra-ui/core";
@@ -212,6 +213,18 @@ export interface ExtraEditorProps {
   selectedSheetName?: string;
   isFormulaMode?: boolean;
   supportedFormulas?: string[];
+  onFormulaChange?: (props: FormulaChangeProps) => void;
+}
+
+export interface FormulaChangeProps {
+  showCellSuggestion?: boolean;
+  newSelectionMode: NewSelectionMode;
+  selections?: FormulaSelection[];
+}
+
+export interface FormulaSelection {
+  sheet: SheetID;
+  selection: SelectionArea;
 }
 
 export type WorkbookGridRef = {
@@ -336,6 +349,14 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const currentlyEditingSheetId = useRef<SheetID>();
     const editorRef = useRef<EditableRef>(null);
     const editingCellRef = useRef<CellInterface>();
+    const [formulaState, setFormulaState] = useState<FormulaChangeProps>(() => {
+      return {
+        newSelectionMode: "modify",
+        showCellSuggestion: false,
+        selections: []
+      };
+    });
+    const { newSelectionMode, showCellSuggestion } = formulaState;
 
     /**
      * Keep track of variables in `refs` cos we bound events to `document`
@@ -719,7 +740,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       clearSelections,
       ...selectionProps
     } = useSelection({
-      newSelectionMode: isFormulaMode ? "modify" : "clear",
+      newSelectionMode: isFormulaMode ? newSelectionMode : "clear",
       selectionPolicy,
       selectionTopBound,
       selectionLeftBound,
@@ -763,7 +784,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     /* Focus on the editor */
     const updateFormulaEditor = useCallback(
       (sel: SelectionArea | undefined) => {
-        // editorRef.current?.updateSelection?.(sel)
+        editorRef.current?.updateSelection?.(sel);
       },
       []
     );
@@ -1088,12 +1109,16 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         const isFormula = isAFormula(value);
         setFormulaMode(!!isFormula);
         if (isFormula) {
-          // const sel = getSelectionsFromInput(value);
-          // setSelections(sel);
+          const sel = getSelectionsFromInput(value);
+          setSelections(sel);
         }
       },
       []
     );
+
+    const handleFormulaChange = useCallback((props: FormulaChangeProps) => {
+      setFormulaState(props);
+    }, []);
 
     /**
      * Editable
@@ -1123,7 +1148,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       },
       hideOnBlur: !isFormulaMode,
       onKeyDown: e => {
-        if (isFormulaMode && isArrowKey(e.nativeEvent.which)) {
+        if (
+          isFormulaMode &&
+          showCellSuggestion &&
+          isArrowKey(e.nativeEvent.which)
+        ) {
           selectionProps.onKeyDown(e);
         }
       },
@@ -1131,7 +1160,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         return {
           selectedSheetName: sheetName,
           isFormulaMode,
-          supportedFormulas
+          supportedFormulas,
+          onFormulaChange: handleFormulaChange
         };
       },
       getEditor: (cell: CellInterface | null) => {
