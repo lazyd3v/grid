@@ -340,13 +340,14 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         if (!isFormulaMode) {
           return [];
         }
+
         const ranges: any = [];
         const [node, path] = entry;
         const { text } = node;
         let offset = 0;
         if (isFormulaMode) {
           const tokens = normalizeTokens(text as string);
-          if (cursorToken && tokens.length) {
+          if (cursorToken && tokens.length && cursorToken.path[0] === path[0]) {
             ranges.push({
               anchor: { path, offset: cursorToken.offset },
               focus: { path, offset: cursorToken.offset },
@@ -427,7 +428,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             color: color,
             whiteSpace: "pre-wrap",
             textAlign: isFormulaMode ? "left" : horizontalAlign,
-            lineHeight: "normal",
+            lineHeight: "14px",
             textDecoration: underline ? "underline" : "none",
             cursor: "text",
             flex: 1

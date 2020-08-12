@@ -6,6 +6,7 @@ import React, {
   useMemo
 } from "react";
 import { KeyCodes, castToString } from "@rowsncolumns/grid";
+import { escapeRegExp } from "../constants";
 
 export interface ShiftDownProps {
   initialInputValue?: React.ReactText;
@@ -93,7 +94,7 @@ const useShiftDown = (props: ShiftDownProps) => {
           return true;
         if (filter) return filter(item);
         const key = typeof item === "object" ? item.value || item.label : item;
-        return new RegExp("^" + inputValue, "gi").test(key);
+        return new RegExp("^" + escapeRegExp(inputValue), "gi").test(key);
       })
       .slice(0, limit);
   }, [inputValue, options, filter, showAllIfEmpty]);
