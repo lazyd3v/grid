@@ -12,7 +12,6 @@ import {
   Node,
   Transforms,
   NodeEntry,
-  Range,
   Editor,
   Point
 } from "slate";
@@ -41,13 +40,10 @@ import {
 } from "../constants";
 import {
   normalizeTokens,
-  tokenVocabulary,
   getSelectionColorAtIndex,
   selectionToAddress
 } from "./../formulas/helpers";
 import { Token } from "fast-formula-parser/grammar/lexing";
-import { current } from "immer";
-import { css } from "@emotion/core";
 import { FormulaChangeProps } from "../Grid/Grid";
 import {
   getCurrentCursorOffset,
@@ -58,7 +54,6 @@ import {
   cleanFunctionToken
 } from "./helpers";
 import { SheetID } from "../Spreadsheet";
-import ReactDOM from "react-dom";
 
 export interface EditableProps {
   value?: React.ReactText;
@@ -130,8 +125,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       isFormulaMode,
       autoFocus,
       supportedFormulas = [],
-      onFormulaChange,
-      ...rest
+      onFormulaChange
     } = props;
     const [suggestionToken, setSuggestionToken] = useState<Token>();
     const [cursorToken, setCursorSuggestionToken] = useState<
@@ -167,11 +161,6 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         const address = `${sheetName ? sheetName + "!" : ""}${cellAddress}`;
         const start = getCurrentCursorOffset(editor);
         if (mode === "modify" && target && start) {
-          const startToken = {
-            ...start,
-            offset: target.startOffset
-          };
-
           Transforms.delete(editor, {
             at: start,
             distance: target.image.length,
@@ -372,59 +361,47 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             editor={editor}
             value={value}
             onChange={value => {
-              ReactDOM.unstable_batchedUpdates(() => {
-                setValue(value);
-                const isFormula = isAFormula(deserialize(value));
-                if (isFormula) {
-                  const start = getCurrentCursorOffset(editor);
-                  if (!start) {
-                    return;
-                  }
-                  const from = Editor.before(editor, start, { unit: "line" });
-                  const end =
-                    Editor.after(editor, start, { unit: "line" }) || start;
-                  if (!from) {
-                    return;
-                  }
-                  const range = Editor.range(editor, from, end);
-                  const line = Editor.string(editor, range);
-                  const tokens = normalizeTokens(line);
-                  const fnToken = functionSuggestion(tokens, editor);
-                  const curToken = getCurrentToken(tokens, editor);
-                  const showFnSuggestions = !!fnToken;
-                  const showCellSuggestion = showCellSuggestions(
-                    editor,
-                    tokens
-                  );
-                  const isCell = isCurrentPositionACell(editor, tokens);
-                  const isNewCell = !isCurrentPositionACell(editor, tokens);
-                  const cellTokenIndex = showCellSuggestion
-                    ? curToken
-                      ? isNewCell
-                        ? curToken?.endColumn
-                        : curToken?.startOffset
-                      : getCurrentCursorOffset(editor)?.offset
-                    : null;
-                  if (showFnSuggestions) {
-                    setSuggestionToken(fnToken);
-                    setInputValue(cleanFunctionToken(fnToken?.image ?? ""));
-                  } else {
-                    setSuggestionToken(void 0);
-                    setInputValue("");
-                  }
-
-                  setTarget(curToken);
-
-                  onFormulaChange?.({
-                    showCellSuggestion: !!showCellSuggestion || !!isCell,
-                    newSelectionMode: showCellSuggestion ? "append" : "modify"
-                  });
-
-                  setCursorSuggestionToken(
-                    showCellSuggestion ? getCurrentCursorOffset(editor) : void 0
-                  );
+              setValue(value);
+              const isFormula = isAFormula(deserialize(value));
+              if (isFormula) {
+                const start = getCurrentCursorOffset(editor);
+                if (!start) {
+                  return;
                 }
-              });
+                const from = Editor.before(editor, start, { unit: "line" });
+                const end =
+                  Editor.after(editor, start, { unit: "line" }) || start;
+                if (!from) {
+                  return;
+                }
+                const range = Editor.range(editor, from, end);
+                const line = Editor.string(editor, range);
+                const tokens = normalizeTokens(line);
+                const fnToken = functionSuggestion(tokens, editor);
+                const curToken = getCurrentToken(tokens, editor);
+                const showFnSuggestions = !!fnToken;
+                const showCellSuggestion = showCellSuggestions(editor, tokens);
+                const isCell = isCurrentPositionACell(editor, tokens);
+                const isNewCell = !isCurrentPositionACell(editor, tokens);
+                if (showFnSuggestions) {
+                  setSuggestionToken(fnToken);
+                  setInputValue(cleanFunctionToken(fnToken?.image ?? ""));
+                } else {
+                  setSuggestionToken(void 0);
+                  setInputValue("");
+                }
+
+                setTarget(curToken);
+
+                onFormulaChange?.({
+                  showCellSuggestion: !!showCellSuggestion || !!isCell,
+                  newSelectionMode: showCellSuggestion ? "append" : "modify"
+                });
+
+                setCursorSuggestionToken(
+                  showCellSuggestion ? getCurrentCursorOffset(editor) : void 0
+                );
+              }
             }}
           >
             <Editable

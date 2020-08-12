@@ -36,7 +36,6 @@ import Grid, {
   SelectionProps,
   Selection,
   NewSelectionMode,
-  rafThrottle,
   throttle
 } from "@rowsncolumns/grid";
 import { debounce, cellIdentifier } from "@rowsncolumns/grid";
