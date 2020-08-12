@@ -1004,13 +1004,23 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
         const pos = getRelativePositionFromOffset(left, top);
         if (!pos) return null;
         const { x, y } = pos;
+        const rowOffset = isWithinFrozenRowBoundary(y) ? y : y + scrollTop;
+        const columnOffset = isWithinFrozenColumnBoundary(x)
+          ? x
+          : x + scrollLeft;
+        if (
+          rowOffset > estimatedTotalHeight ||
+          columnOffset > estimatedTotalWidth
+        ) {
+          return null;
+        }
         const rowIndex = getRowStartIndexForOffset({
           rowHeight,
           columnWidth,
           rowCount,
           columnCount,
           instanceProps: instanceProps.current,
-          offset: isWithinFrozenRowBoundary(y) ? y : y + scrollTop,
+          offset: rowOffset,
           scale
         });
         const columnIndex = getColumnStartIndexForOffset({
@@ -1019,7 +1029,7 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
           rowCount,
           columnCount,
           instanceProps: instanceProps.current,
-          offset: isWithinFrozenColumnBoundary(x) ? x : x + scrollLeft,
+          offset: columnOffset,
           scale
         });
         /* To be compatible with merged cells */
@@ -1033,6 +1043,8 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
         columnWidth,
         scrollTop,
         rowCount,
+        estimatedTotalHeight,
+        estimatedTotalWidth,
         columnCount,
         mergedCellMap
       ]
