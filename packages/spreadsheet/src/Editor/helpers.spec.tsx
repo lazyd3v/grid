@@ -152,4 +152,30 @@ describe("Parsing", () => {
     let showCursor: boolean = showCellSuggestions(editor, tokens);
     expect(showCursor).toBeFalsy();
   });
+  it("Should hide suggestion cursor in inside functions", () => {
+    const app = render(<App />);
+    let [value, distance] = cleanup("=SUM(A1,<cursor>2)");
+    editor.insertNode({
+      text: value
+    });
+    Transforms.move(editor, { unit: "line", reverse: true });
+    Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
+    const tokens: Token[] = normalizeTokens(value);
+
+    let showCursor: boolean = showCellSuggestions(editor, tokens);
+    expect(showCursor).toBeFalsy();
+  });
+  it("Should hide suggestion cursor between functions", () => {
+    const app = render(<App />);
+    let [value, distance] = cleanup("=SU<cursor>M()");
+    editor.insertNode({
+      text: value
+    });
+    Transforms.move(editor, { unit: "line", reverse: true });
+    Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
+    const tokens: Token[] = normalizeTokens(value);
+
+    let showCursor: boolean = showCellSuggestions(editor, tokens);
+    expect(showCursor).toBeFalsy();
+  });
 });

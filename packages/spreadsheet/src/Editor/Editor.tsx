@@ -132,7 +132,12 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
                 : padding),
             width + borderWidth / 2
           ),
-          Math.max(measuredHeight + DEFAULT_CELL_PADDING, height)
+          Math.max(
+            measuredHeight +
+              DEFAULT_CELL_PADDING +
+              (isFormulaMode ? 0 : borderWidth),
+            height
+          )
         ];
       },
       [width, height, fontSize, fontFamily, wrapping, scale, isFormulaMode]

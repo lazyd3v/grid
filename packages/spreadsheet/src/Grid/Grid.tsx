@@ -1146,7 +1146,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         }
         editingCellRef.current = cell;
       },
-      hideOnBlur: !isFormulaMode,
+      hideOnBlur: isFormulaMode ? !formulaState.showCellSuggestion : true,
       onKeyDown: e => {
         if (
           isFormulaMode &&

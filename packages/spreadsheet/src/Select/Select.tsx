@@ -149,8 +149,8 @@ const Select: React.FC<SelectProps> = memo(props => {
         borderWidth={1}
         display={isOpen ? "block" : "none"}
       >
-        {true &&
-          items.map((item, index) => {
+        {isOpen &&
+          (items as Item[]).map((item, index) => {
             const { label, value } = item;
             return (
               <Box

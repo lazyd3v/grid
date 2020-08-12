@@ -51,8 +51,6 @@ import {
   getCurrentCursorOffset,
   functionSuggestion,
   getCurrentToken,
-  getPreviousToken,
-  getNextToken,
   showCellSuggestions,
   isCurrentPositionACell,
   cleanFunctionToken
@@ -87,22 +85,10 @@ export type EditableRef = {
   updateSelection?: (sel: SelectionArea) => void;
 };
 
-export const createSlateChildren = (text: string) => {
-  const tokens = normalizeTokens(text);
-  let leafs = [];
-  let prevToken = 0;
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    leafs.push({
-      text: (prevToken !== token.startOffset ? " " : "") + token.image,
-      index: token.index,
-      selection: !!token.sel
-    });
-    prevToken = token.endColumn;
-  }
-  return leafs;
-};
-
+/**
+ * Slate leaf renderer
+ * @param param0
+ */
 const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
   return (
     <span
@@ -163,6 +149,10 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         })
         .join("\n");
     }, []);
+
+    /**
+     * Expose ref methods
+     */
     useImperativeHandle(
       forwardedRef,
       () => {
@@ -191,8 +181,6 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       }
     }, []);
 
-    const defaultHighlightedIndex = isFormulaMode ? 0 : null;
-
     const {
       highlightedIndex,
       onKeyDown: onShiftDownKeyDown,
@@ -200,15 +188,17 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       menuRef,
       selectedItem,
       items,
+      closeMenu,
       onMouseMove,
       onMouseDown,
       onClick,
-      setSelectedItem
+      isOpen,
+      openMenu
     } = useShiftDown({
       showAllIfEmpty: !isFormulaMode,
-      defaultHighlightedIndex,
+      defaultHighlightedIndex: isFormulaMode ? 0 : null,
       initialInputValue: isFormulaMode ? "" : initialValue,
-      initialIsOpen: true,
+      initialIsOpen: isFormulaMode ? false : (options?.length ?? 0) > 0,
       initialSelectedItem: initialValue,
       options: isFormulaMode ? supportedFormulas : options,
       onChange: item => {
@@ -235,6 +225,14 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         onSubmit?.(item as string);
       }
     });
+
+    useEffect(() => {
+      items.length > 0 ? openMenu() : closeMenu();
+    }, [items]);
+
+    /**
+     * Slate decorator
+     */
     const decorate = useCallback(
       (entry: NodeEntry<Node>) => {
         if (!isFormulaMode) {
@@ -328,7 +326,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             color: color,
             whiteSpace: "pre-wrap",
             textAlign: isFormulaMode ? "left" : horizontalAlign,
-            lineHeight: "14px",
+            lineHeight: "normal",
             textDecoration: underline ? "underline" : "none",
             cursor: "text",
             flex: 1
@@ -395,10 +393,9 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                   e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
                 const isFromSelection =
                   highlightedIndex !== null && items.length > 0;
-                const text =
-                  highlightedIndex !== null && items.length > 0
-                    ? items[highlightedIndex]
-                    : deserialize(value);
+                const text = isFromSelection
+                  ? (items[highlightedIndex as number] as string)
+                  : deserialize(value);
 
                 // Enter key
                 if (e.which === KeyCodes.Enter) {
@@ -417,6 +414,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                     );
 
                     e.preventDefault();
+
+                    return;
                   }
                 }
 
@@ -442,7 +441,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             />
           </Slate>
         </div>
-        {items?.length ? (
+        {isOpen ? (
           <Box
             ref={menuRef}
             width="auto"
@@ -461,7 +460,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             maxHeight={400}
             overflow="auto"
           >
-            {items.map((item, index) => {
+            {(items as string[]).map((item, index: number) => {
               return (
                 <Box
                   padding={1}

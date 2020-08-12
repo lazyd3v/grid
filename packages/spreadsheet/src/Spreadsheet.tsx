@@ -1959,6 +1959,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
               width: 8px;
               cursor: default;
               display: inline-block;
+              line-height: 12px;
             }
           `}
         />

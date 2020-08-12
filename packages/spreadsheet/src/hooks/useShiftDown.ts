@@ -23,6 +23,27 @@ export interface ShiftDownProps {
   limit?: number;
 }
 
+export interface ShiftDownResults {
+  highlightedIndex: number | null;
+  onKeyDown: (e: React.KeyboardEvent<any>) => void;
+  inputValue: string;
+  setInputValue: (text: string) => void;
+  isOpen: boolean;
+  openMenu: () => void;
+  closeMenu: () => void;
+  toggleMenu: () => void;
+  menuRef: React.Ref<HTMLElement>;
+  inputRef: React.Ref<HTMLElement | HTMLInputElement>;
+  selectedItem: Item | React.ReactText | undefined;
+  setSelectedItem: (item: Item | string) => void;
+  items: Item[] | string[];
+  onMouseMove: (index: number) => void;
+  onMouseDown: (e: React.MouseEvent<any>) => void;
+  onClick: (item: Item | string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
+}
+
 export interface Item {
   label: React.ReactText;
   value: any;
@@ -35,7 +56,7 @@ const defaultItemToString = (text: Item | string) => text as string;
  * Using this due to lack of good typing in Downshift
  * @param props
  */
-const useShiftDown = (props: ShiftDownProps) => {
+const useShiftDown = (props: ShiftDownProps): ShiftDownResults => {
   const {
     initialInputValue = "",
     initialIsOpen = false,
@@ -65,13 +86,11 @@ const useShiftDown = (props: ShiftDownProps) => {
   const inputRef = useRef<HTMLElement | HTMLInputElement>(null);
   const isDirty = useRef<boolean>(false);
 
-  const handleSetSelectedItem = useCallback(
-    (item: Item | string | undefined) => {
-      setSelectedItem(item);
-      handleSetInputValue(itemToString(item ?? ""));
-    },
-    []
-  );
+  const handleSetSelectedItem = (item: Item | string | undefined) => {
+    onChange?.(item);
+    setSelectedItem(item);
+    handleSetInputValue(itemToString(item ?? ""));
+  };
 
   useEffect(() => {
     if (!isControlled) return;
@@ -81,7 +100,7 @@ const useShiftDown = (props: ShiftDownProps) => {
     handleSetInputValue(itemToString(controlledSelecteditem ?? ""));
   }, [isControlled, controlledSelecteditem, selectedItem]);
 
-  const filteredItems = useMemo(() => {
+  const filteredItems: Item[] | string[] = useMemo(() => {
     if (!inputValue && !showAllIfEmpty) {
       return [];
     }
@@ -127,7 +146,7 @@ const useShiftDown = (props: ShiftDownProps) => {
       }
       if (keyCode === KeyCodes.Enter) {
         if (highlightedIndex !== null) {
-          handleSelect(filteredItems[highlightedIndex]);
+          handleSetSelectedItem(filteredItems[highlightedIndex]);
         }
       }
     },
@@ -165,23 +184,11 @@ const useShiftDown = (props: ShiftDownProps) => {
     event.preventDefault();
   }, []);
 
-  const handleSelect = useCallback((item: Item | string) => {
-    setSelectedItem(item);
-    handleSetInputValue(itemToString(item));
-  }, []);
-
   const handleSetInputValue = useCallback((value: string) => {
     setInputValue(value);
     setHighlightedIndex(defaultHighlightedIndex);
     isDirty.current = true;
   }, []);
-
-  useEffect(() => {
-    if (selectedItem === initialSelectedItem) {
-      return;
-    }
-    onChange?.(selectedItem);
-  }, [selectedItem]);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -227,7 +234,7 @@ const useShiftDown = (props: ShiftDownProps) => {
     items: filteredItems,
     onMouseMove: handleMouseMove,
     onMouseDown: handleMouseDown,
-    onClick: handleSelect,
+    onClick: handleSetSelectedItem,
     onFocus: handleFocus,
     onBlur: handleBlur
   };

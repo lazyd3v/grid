@@ -1,5 +1,6 @@
 import { Editor, Range } from "slate";
 import { Token } from "fast-formula-parser/grammar/lexing";
+import { normalizeTokens } from "../formulas/helpers";
 
 export const cleanFunctionToken = (text: string) => {
   return text.replace(new RegExp(/\(|\)/, "gi"), "");
@@ -68,6 +69,16 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
   if (next && next.tokenType.name === "Cell") {
     return false;
   }
+
+  if (
+    start &&
+    cur &&
+    cur.tokenType.name === "Function" &&
+    start.offset < cur.endColumn
+  ) {
+    return false;
+  }
+
   if (
     start &&
     cur &&
@@ -81,7 +92,15 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
     nextOps.includes(next.tokenType.name) &&
     cur &&
     cur.tokenType.name !== "Comma" &&
-    cur.tokenType.name !== "Function"
+    cur.tokenType.name !== "Function" &&
+    cur.tokenType.name !== next.tokenType.name // to remove spaces
+  ) {
+    return false;
+  }
+
+  if (
+    next &&
+    ["Cell", "Function", "OpenParens", "Number"].includes(next.tokenType.name)
   ) {
     return false;
   }
@@ -182,3 +201,19 @@ export const operatorTokenNames = [
   // "QuoteS",
   ...operators
 ];
+
+export const createSlateChildren = (text: string) => {
+  const tokens = normalizeTokens(text);
+  let leafs = [];
+  let prevToken = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    leafs.push({
+      text: (prevToken !== token.startOffset ? " " : "") + token.image,
+      index: token.index,
+      selection: !!token.sel
+    });
+    prevToken = token.endColumn;
+  }
+  return leafs;
+};

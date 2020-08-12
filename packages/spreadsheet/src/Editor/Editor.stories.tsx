@@ -43,7 +43,7 @@ export const FormulaEditor = () => {
   const position = { x: 0, y: 0, width: 200, height: 20 };
   const cell = { rowIndex: 1, columnIndex: 1 };
   const activeCell = { rowIndex: 1, columnIndex: 1 };
-  const [value, setValue] = useState("=SUM('Sheet1'!A1:A2) + ");
+  const [value, setValue] = useState("=SUM(2,2,A3,2, )");
   const editorType = "formula";
   const options = ["Singapore", "USA", "Japan"];
   return (
