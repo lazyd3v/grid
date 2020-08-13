@@ -664,7 +664,7 @@ export const createStateReducer = ({
                 if (!bounds) continue;
                 for (let j = bounds.top; j <= bounds.bottom; j++) {
                   for (let k = bounds.left; k <= bounds.right; k++) {
-                    if (sheet.cells[j]?.[k].locked) {
+                    if (sheet.cells[j]?.[k]?.locked) {
                       continue;
                     }
                     delete sheet.cells[j]?.[k]?.plaintext;
