@@ -472,7 +472,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        i,
+                        i - start + 1,
                         direction
                       );
                     }
@@ -486,7 +486,7 @@ export const createStateReducer = ({
                 let counter = 0;
                 for (let i = start; i >= end; i--) {
                   let curSelRowIndex = sel.bounds.bottom + counter;
-                  if (curSelRowIndex > sel.bounds.top) {
+                  if (curSelRowIndex < sel.bounds.top) {
                     counter = 0;
                     curSelRowIndex = sel.bounds.bottom;
                   }
@@ -502,7 +502,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        i,
+                        i - start - 1,
                         direction
                       );
                     }
@@ -532,7 +532,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        j,
+                        j - start - 1,
                         direction
                       );
                     }
@@ -562,7 +562,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        j,
+                        j - start + 1,
                         direction
                       );
                     }

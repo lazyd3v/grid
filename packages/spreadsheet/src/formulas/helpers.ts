@@ -248,34 +248,21 @@ export const fillFormula = (
     if (token.tokenType.name === tokenVocabulary.Cell.name) {
       const cell = addressToCell(token.image);
       switch (direction) {
-        case Direction.Down: {
+        case Direction.Up:
+        case Direction.Down:
           if (cell) {
-            cell.rowIndex = index;
+            cell.rowIndex += index;
           }
           token.image = cellToAddress(cell) as string;
           break;
-        }
-        case Direction.Right: {
+
+        case Direction.Left:
+        case Direction.Right:
           if (cell) {
-            cell.columnIndex = index;
+            cell.columnIndex += index;
           }
           token.image = cellToAddress(cell) as string;
           break;
-        }
-        case Direction.Left: {
-          if (cell) {
-            cell.columnIndex = index;
-          }
-          token.image = cellToAddress(cell) as string;
-          break;
-        }
-        case Direction.Up: {
-          if (cell) {
-            cell.rowIndex = index;
-          }
-          token.image = cellToAddress(cell) as string;
-          break;
-        }
       }
     }
     newTokens.push(token);

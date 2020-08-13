@@ -7,12 +7,12 @@ describe("Extract cell selection from raw text", () => {
 
   it("can parse single cells", () => {
     const text = "=A1";
-    const selections = getSelectionsFromInput(text);
+    const selections = getSelectionsFromInput(text, 1);
     expect(selections.length).toBe(1);
   });
   it("can parse range cells", () => {
     const text = "=A1:A3";
-    const selections = getSelectionsFromInput(text);
+    const selections = getSelectionsFromInput(text, 2);
     expect(selections.length).toBe(1);
   });
   // it("can parse column range", () => {
