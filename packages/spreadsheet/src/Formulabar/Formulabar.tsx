@@ -16,7 +16,7 @@ import {
 } from "./../constants";
 
 interface FormulabarProps {
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (value: string) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -82,7 +82,7 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
           borderColor={borderColor}
           color={color}
           focusBorderColor={borderColor}
-          onChange={onChange}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)}
           onBlur={onBlur}
           value={value}
           onKeyDown={onKeyDown}

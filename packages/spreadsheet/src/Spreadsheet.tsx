@@ -818,15 +818,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           undoable: false
         });
 
-        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
-          cellChangeCallback(
-            selectedSheetRef.current,
-            lastActiveCellRef.current,
-            lastSelectionsRef.current,
-            true
-          );
-        }
-
         if (lastActiveCellRef.current) {
           setActiveCell(lastActiveCellRef.current);
         }
@@ -835,6 +826,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         }
         /* Focus on the grid */
         if (enableGlobalKeyHandlers) currentGrid.current?.focus();
+
+        /* Trigger cell change */
+        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
+          cellChangeCallback(
+            selectedSheetRef.current,
+            lastActiveCellRef.current,
+            lastSelectionsRef.current,
+            true
+          );
+        }        
       },
       onRedo: patches => {
         /* Side-effects */
@@ -851,16 +852,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         );
         const selectionsPatch = patches.find((item: Patch) =>
           item.path.includes("currentSelections")
-        );
-
-        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
-          cellChangeCallback(
-            selectedSheetRef.current,
-            activeCellPatch?.value,
-            selectionsPatch?.value,
-            true
-          );
-        }
+        );        
 
         if (activeCellPatch) {
           setActiveCell(activeCellPatch.value);
@@ -871,6 +863,16 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
 
         /* Focus on the grid */
         if (enableGlobalKeyHandlers) currentGrid.current?.focus();
+
+        /* Trigger cell change */
+        if (patchHasCellChanges(patches) && selectedSheetRef.current) {
+          cellChangeCallback(
+            selectedSheetRef.current,
+            activeCellPatch?.value,
+            selectionsPatch?.value,
+            true
+          );
+        }
       }
     });
 
@@ -1332,9 +1334,8 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
      * When formula input changes
      */
     const handleFormulabarChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
+      (value: string) => {
         if (!activeCell) return;
-        const value = e.target.value;
         const currentlyEditingCell = currentGrid.current?.getEditingCell();
         if (!currentlyEditingCell) {
           return;
@@ -1461,7 +1462,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         };
         const cellChanges: Cells = {};
 
-        window.requestAnimationFrame(async () => {
+        requestAnimationFrame(async () => {
           for (let i = 0; i < sel.length; i++) {
             const { bounds } = sel[i];
             for (
@@ -1627,7 +1628,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
 
     /**.
      * On Paste
-     * TODO: Preserve formatting
      */
     const handlePaste = useCallback(
       (
@@ -1643,40 +1643,37 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           columnIndex,
           columnIndex + (rows.length && rows[0].length - 1)
         );
-        const newSelection = {
-          bounds: {
-            top: rowIndex,
-            left: columnIndex,
-            bottom: endRowIndex,
-            right: endColumnIndex
-          }
-        };
+        const newSelection = rowIndex === endRowIndex && columnIndex === endColumnIndex
+          ? []
+          : [{
+              bounds: {
+                top: rowIndex,
+                left: columnIndex,
+                bottom: endRowIndex,
+                right: endColumnIndex
+              }
+            }];
 
         dispatch({
           type: ACTION_TYPE.PASTE,
           id,
           rows,
           activeCell,
-          selection
-        });
-
-        /* Trigger callback and calculation */
-        cellChangeCallback(
-          id,
-          activeCell,
-          selection === void 0 ? [newSelection] : [selection, newSelection]
-        );
+          selection,
+          newSelection
+        });        
 
         if (activeCell) {
           const value = getCellConfigRef.current?.(id, activeCell)?.text;
           handleActiveCellValueChange(id, activeCell, value);
         }
 
-        // /* Should select */
-        if (rowIndex === endRowIndex && columnIndex === endColumnIndex) return;
-
-        // Highlight the new selection
-        currentGrid.current?.setSelections([newSelection]);
+        /* Trigger callback and calculation */      
+        cellChangeCallback(
+          id,
+          activeCell,
+          newSelection.concat(selection ?? [])
+        );
       },
       []
     );

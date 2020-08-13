@@ -259,6 +259,7 @@ export type ActionTypes =
       rows: (string | null | CellConfig)[][];
       activeCell: CellInterface;
       selection?: SelectionArea;
+      newSelection?: SelectionArea[];
       undoable?: boolean;
     }
   | { type: ACTION_TYPE.REPLACE_SHEETS; sheets: Sheet[]; undoable?: boolean }
@@ -1000,7 +1001,7 @@ export const createStateReducer = ({
             ) as Sheet;
             if (sheet) {
               const { selections } = sheet;
-              const { rows, activeCell, selection } = action;
+              const { rows, activeCell, selection, newSelection } = action;
               const { rowIndex, columnIndex } = activeCell;
               const { cells } = sheet;
               for (let i = 0; i < rows.length; i++) {
@@ -1040,10 +1041,14 @@ export const createStateReducer = ({
                   }
                 }
               }
+              /* Update sheet selections */
+              if (newSelection !== void 0) {
+                sheet.selections = newSelection
+              }
 
               /* Keep reference of active cell, so we can focus back */
               draft.currentActiveCell = activeCell;
-              draft.currentSelections = selections;
+              draft.currentSelections = newSelection;
             }
             break;
           }
