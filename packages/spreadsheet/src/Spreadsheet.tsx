@@ -760,11 +760,12 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       [sheetsById]
     );
 
+    /* Keep sheet references in-sync */
     useEffect(() => {
       getCellConfigRef.current = getCellConfig;
       getCellConfigBySheetNameRef.current = getCellConfigBySheetName;
       getSheetRef.current = getSheet;
-    }, [getCellConfig, getCellConfigBySheetName, getSheet]);
+    });
 
     /**
      * Calculation
@@ -1643,25 +1644,27 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           columnIndex,
           columnIndex + (rows.length && rows[0].length - 1)
         );
-        const newSelection = rowIndex === endRowIndex && columnIndex === endColumnIndex
-          ? []
-          : [{
-              bounds: {
-                top: rowIndex,
-                left: columnIndex,
-                bottom: endRowIndex,
-                right: endColumnIndex
-              }
-            }];
-
+        const newSelection = [{
+          bounds: {
+            top: rowIndex,
+            left: columnIndex,
+            bottom: endRowIndex,
+            right: endColumnIndex
+          }
+        }];
+        /* Should we update selections in state */
+        const isSingleCellSelection = rowIndex === endRowIndex && columnIndex === endColumnIndex
+        
         dispatch({
           type: ACTION_TYPE.PASTE,
           id,
           rows,
           activeCell,
           selection,
-          newSelection
-        });        
+          newSelection: isSingleCellSelection
+            ? void 0
+            : newSelection
+        });
 
         if (activeCell) {
           const value = getCellConfigRef.current?.(id, activeCell)?.text;
