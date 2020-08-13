@@ -179,8 +179,7 @@ const FilterComponent = ({
           </InputGroup>
           <Box
             overflow="auto"
-            minHeight={100}
-            maxHeight={200}
+            height={160}
             mt={2}
             mb={1}
             pt={2}
