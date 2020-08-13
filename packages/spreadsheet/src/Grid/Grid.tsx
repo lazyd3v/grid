@@ -810,7 +810,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
 
     useEffect(() => {
       updateFormulaEditorThrottle.current = throttle(updateFormulaEditor, 50);
-    }, [updateFormulaEditor]);
+    }, [updateFormulaEditor, selectedSheet]);
 
     useEffect(() => {
       if (
@@ -823,7 +823,13 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
           formulaState.newSelectionMode
         );
       }
-    }, [gridSelections, isFormulaMode, isFormulaInputActive, formulaState]);
+    }, [
+      gridSelections,
+      isFormulaMode,
+      isFormulaInputActive,
+      formulaState,
+      selectedSheet,
+    ]);
 
     const selections = isFormulaMode ? formulaSelections : gridSelections;
 

@@ -117,9 +117,8 @@ export const getSelectionsFromInput = (
           i = i + 3;
           continue;
         }
-
-        activeSheet = null;
       }
+      activeSheet = null;
       i++;
     }
     return selections;
@@ -189,11 +188,10 @@ export const normalizeTokens = (text: string | undefined): Token[] => {
           i = i + 3;
           continue;
         }
-
-        activeSheet = null;
       } else {
         normalizedTokens.push(token);
       }
+      activeSheet = null;
       i++;
     }
 
