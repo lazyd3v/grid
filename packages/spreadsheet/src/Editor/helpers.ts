@@ -34,10 +34,7 @@ export const functionSuggestion = (
 };
 
 export const isTokenACell = (token?: Token | null) => {
-  return (
-    token &&
-    (token.tokenType.name === "Column" || token.tokenType.name === "Cell")
-  );
+  return token && token.tokenType.name === "Cell";
 };
 
 export const getCurrentCursorOffset = (editor: Editor) => {

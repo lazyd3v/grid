@@ -30,6 +30,10 @@ type Cell = Record<string, CellConfig>;
 
 export interface CalcEngineOptions {
   functions?: Functions;
+  rowCount: number;
+  columnCount: number;
+  getMinMaxRows: (id: Sheet) => number[];
+  getMinMaxColumns: (id: Sheet, rowIndex: number) => number[];
 }
 
 /**
@@ -40,7 +44,7 @@ class CalcEngine {
   parser: FormulaParser;
   dag: Dag<Node>;
   mapping: DependencyMapping;
-  constructor(options?: CalcEngineOptions) {
+  constructor(options: CalcEngineOptions) {
     this.parser = new FormulaParser(options);
     this.dag = new Dag<Node>((node) => node.children);
     this.mapping = new DependencyMapping();
@@ -166,9 +170,14 @@ class CalcEngine {
      */
     for (const dep of dependencies) {
       if ((dep as CellRange).from) {
-        const { from, to, sheet } = dep as CellRange;
+        const { from, to, sheet } = this.restrictRowRange(dep as CellRange);
         for (let i = from.row; i <= to.row; i++) {
-          for (let j = from.col; j <= to.col; j++) {
+          const [minCols, maxCols] = this.restrictColumnRange(sheet, i);
+          for (
+            let j = Math.max(from.col, minCols);
+            j <= Math.min(to.col, maxCols);
+            j++
+          ) {
             const curCell = { rowIndex: i, columnIndex: j };
             const address = cellToAddress(curCell);
             if (!address) {
@@ -244,6 +253,25 @@ class CalcEngine {
       }
     }
     return false;
+  };
+
+  restrictRowRange = (ref: CellRange) => {
+    const [minRows, maxRows] = this.parser.getMinMaxRows(ref.sheet);
+    return {
+      ...ref,
+      from: {
+        ...ref.from,
+        row: Math.max(ref.from.row, minRows),
+      },
+      to: {
+        ...ref.to,
+        row: Math.min(ref.to.row, maxRows),
+      },
+    };
+  };
+
+  restrictColumnRange = (id: Sheet, rowIndex: number) => {
+    return this.parser.getMinMaxColumns(id, rowIndex);
   };
 
   prepareOutput = (changes: CellsBySheet) => {
@@ -433,9 +461,19 @@ class CalcEngine {
               const dependents = this.parser.getDependencies(formula, position);
               for (const dep of dependents) {
                 if ((dep as CellRange).from) {
-                  const { from, to, sheet } = dep as CellRange;
+                  const { from, to, sheet } = this.restrictRowRange(
+                    dep as CellRange
+                  );
                   for (let i = from.row; i <= to.row; i++) {
-                    for (let j = from.col; j <= to.col; j++) {
+                    const [minCols, maxCols] = this.restrictColumnRange(
+                      sheet,
+                      i
+                    );
+                    for (
+                      let j = Math.max(from.col, minCols);
+                      j <= Math.min(to.col, maxCols);
+                      j++
+                    ) {
                       const cell = { rowIndex: i, columnIndex: j };
                       const address = cellToAddress(cell);
                       if (!address) {

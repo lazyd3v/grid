@@ -144,7 +144,7 @@ const useShiftDown = (props: ShiftDownProps): ShiftDownResults => {
       if (keyCode === KeyCodes.Escape) {
         closeMenu();
       }
-      if (keyCode === KeyCodes.Enter) {
+      if (keyCode === KeyCodes.Enter || keyCode === KeyCodes.Tab) {
         if (highlightedIndex !== null) {
           handleSetSelectedItem(filteredItems[highlightedIndex]);
         }

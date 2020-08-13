@@ -18,9 +18,20 @@ export interface UseCalcOptions {
   getCellConfig: React.MutableRefObject<
     CellConfigBySheetNameGetter | undefined
   >;
+  rowCount: number;
+  columnCount: number;
+  getMinMaxRows: (id: SheetID) => number[];
+  getMinMaxColumns: (id: SheetID, rowIndex: number) => number[];
 }
 
-const useCalc = ({ formulas, getCellConfig }: UseCalcOptions) => {
+const useCalc = ({
+  formulas,
+  getCellConfig,
+  rowCount,
+  columnCount,
+  getMinMaxRows,
+  getMinMaxColumns,
+}: UseCalcOptions) => {
   const engine = useRef<CalcEngine>();
   useEffect(() => {
     engine.current = new CalcEngine({
@@ -28,8 +39,27 @@ const useCalc = ({ formulas, getCellConfig }: UseCalcOptions) => {
         ...defaultFormulas,
         ...formulas,
       },
+      rowCount,
+      columnCount,
+      getMinMaxRows,
+      getMinMaxColumns,
     });
   }, []);
+
+  /**
+   * Keep row and column count in syncc
+   */
+  useEffect(() => {
+    engine.current?.parser.updateRowColumnCount(rowCount, columnCount);
+  }, [rowCount, columnCount]);
+
+  useEffect(() => {
+    if (!engine.current) {
+      return;
+    }
+    engine.current.parser.getMinMaxRows = getMinMaxRows;
+    engine.current.parser.getMinMaxColumns = getMinMaxColumns;
+  }, [getMinMaxRows, getMinMaxColumns]);
 
   const onCalculate = useCallback(
     (

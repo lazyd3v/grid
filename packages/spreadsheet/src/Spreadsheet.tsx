@@ -41,6 +41,8 @@ import {
   getMinMax,
   COLUMN_HEADER_HEIGHT,
   ROW_HEADER_WIDTH,
+  DEFAULT_ROW_COUNT,
+  DEFAULT_COLUMN_COUNT,
 } from "./constants";
 import {
   FORMATTING_TYPE,
@@ -783,11 +785,35 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     });
 
     /**
+     * Get max rows in a sheet
+     */
+    const getMinMaxRows = useCallback(
+      (sheet: SheetID) => {
+        return getMinMax(sheetsByName[sheet]?.cells);
+      },
+      [sheetsByName]
+    );
+
+    /**
+     * Get max columns in a sheet row
+     */
+    const getMinMaxColumns = useCallback(
+      (sheet: SheetID, rowIndex: number) => {
+        return getMinMax(sheetsByName[sheet].cells?.[rowIndex]);
+      },
+      [sheetsByName]
+    );
+
+    /**
      * Calculation
      */
 
     const { initializeEngine, onCalculateBatch, supportedFormulas } = useCalc({
       formulas,
+      rowCount: currentSheet.rowCount ?? DEFAULT_ROW_COUNT,
+      columnCount: currentSheet.columnCount ?? DEFAULT_COLUMN_COUNT,
+      getMinMaxRows,
+      getMinMaxColumns,
       getCellConfig: getCellConfigBySheetNameRef,
     });
 
@@ -1074,26 +1100,6 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       /* Trigger batch calculation */
       triggerBatchInitialization(changes);
     }, []);
-
-    /**
-     * Get max rows in a sheet
-     */
-    const getMinMaxRows = useCallback(
-      (sheet: SheetID) => {
-        return getMinMax(sheetsById[sheet]?.cells);
-      },
-      [getCellConfig]
-    );
-
-    /**
-     * Get max columns in a sheet row
-     */
-    const getMinMaxColumns = useCallback(
-      (sheet: SheetID, rowIndex: number) => {
-        return getMinMax(sheetsById[sheet].cells?.[rowIndex]);
-      },
-      [getCellConfig]
-    );
 
     /**
      * Active cell + Active cell config.

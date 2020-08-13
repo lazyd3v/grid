@@ -606,7 +606,7 @@ export const DEFAULT_CHECKBOX_VALUES = ["TRUE", "FALSE"];
 
 export const getMinMax = (o: Object) => {
   const keys = Object.keys(o ?? {}).map(Number);
-  return [Math.min(...keys), Math.max(...keys)];
+  return [Math.min(0, ...keys), Math.max(0, ...keys)];
 };
 
 /* Create custom validation */

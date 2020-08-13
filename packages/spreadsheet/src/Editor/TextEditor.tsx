@@ -448,13 +448,18 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                 }
 
                 if (e.which === KeyCodes.Tab) {
+                  if (isFormulaMode && isFromSelection) {
+                    setInputValue("");
+                  } else {
+                    onSubmit &&
+                      onSubmit(
+                        text,
+                        isShiftKey ? Direction.Left : Direction.Right
+                      );
+                  }
+
                   /* Trap focus inside the grid */
                   e.preventDefault();
-                  onSubmit &&
-                    onSubmit(
-                      text,
-                      isShiftKey ? Direction.Left : Direction.Right
-                    );
                 }
                 /* Global handler */
                 onKeyDown?.(e);
