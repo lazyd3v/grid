@@ -1215,6 +1215,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
             color={config?.color}
             fontSize={config?.fontSize}
             fontFamily={config?.fontFamily}
+            bold={config?.bold}
             underline={config?.underline}
             horizontalAlign={horizontalAlign}
             scale={scale}

@@ -23,7 +23,7 @@ import {
   FORMULA_FONT,
   FORMULA_FONT_SIZE,
 } from "../constants";
-import { EditorType } from "../types";
+import { EditorType, FONT_WEIGHT } from "../types";
 import { ExtraEditorProps } from "../Grid/Grid";
 import { SheetID } from "../Spreadsheet";
 
@@ -32,6 +32,7 @@ export interface CustomEditorProps extends EditorProps, ExtraEditorProps {
   color?: string;
   fontSize?: number;
   fontFamily?: string;
+  bold?: boolean;
   wrap?: any;
   horizontalAlign?: any;
   scale?: number;
@@ -81,6 +82,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       color,
       fontSize = 12,
       fontFamily = DEFAULT_FONT_FAMILY,
+      bold,
       wrap: cellWrap = "nowrap",
       selections,
       scrollPosition,
@@ -122,6 +124,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
         textSizer.current.setFont({
           fontSize: isFormulaMode ? FORMULA_FONT_SIZE : fontSize,
           fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
+          fontWeight: bold ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL,
           scale,
         });
 
@@ -146,7 +149,16 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           ),
         ];
       },
-      [width, height, fontSize, fontFamily, wrapping, scale, isFormulaMode]
+      [
+        width,
+        height,
+        fontSize,
+        fontFamily,
+        bold,
+        wrapping,
+        scale,
+        isFormulaMode,
+      ]
     );
 
     /* Width of the input  */
@@ -239,6 +251,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           value={value}
           fontFamily={fontFamily}
           fontSize={fontSize}
+          bold={bold}
           scale={scale}
           color={textColor}
           wrapping={wrapping}

@@ -54,6 +54,7 @@ import {
   cleanFunctionToken,
 } from "./helpers";
 import { SheetID } from "../Spreadsheet";
+import { FONT_WEIGHT } from "../types";
 
 export interface EditableProps {
   value?: React.ReactText;
@@ -62,6 +63,7 @@ export interface EditableProps {
   onCancel: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   fontFamily: string;
   fontSize: number;
+  bold?: boolean;
   scale: number;
   color: string;
   wrapping: any;
@@ -115,6 +117,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       onCancel,
       fontFamily,
       fontSize,
+      bold,
       scale,
       color,
       wrapping,
@@ -337,6 +340,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           style={{
             fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
             fontSize: (isFormulaMode ? FORMULA_FONT_SIZE : fontSize) * scale,
+            fontWeight: bold ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL,
             width: "100%",
             height: "100%",
             padding: "0 1px",
