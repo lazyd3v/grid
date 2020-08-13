@@ -25,6 +25,7 @@ export const functionSuggestion = (
       (token.tokenType.name === "Column" ||
         token.tokenType.name === "Name" ||
         token.tokenType.name === "Function" ||
+        token.tokenType.name === "ExcelRefFunction" ||
         token.tokenType.name === "ExcelConditionalRefFunction")
       ? token
       : void 0;
@@ -55,6 +56,7 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
     ...operators,
     "Comma",
     "Function",
+    "ExcelRefFunction",
     "ExcelConditionalRefFunction",
     "QuoteS",
   ];
@@ -69,13 +71,12 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
   if (next && next.tokenType.name === "Cell") {
     return false;
   }
-
-  if (
-    start &&
+  const curTokenIsFn =
     cur &&
-    cur.tokenType.name === "Function" &&
-    start.offset < cur.endColumn
-  ) {
+    (cur.tokenType.name === "Function" ||
+      cur.tokenType.name === "ExcelRefFunction");
+
+  if (start && cur && curTokenIsFn && start.offset < cur.endColumn) {
     return false;
   }
 
@@ -100,7 +101,9 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
 
   if (
     next &&
-    ["Cell", "Function", "OpenParens", "Number"].includes(next.tokenType.name)
+    ["Cell", "Function", "ExcelRefFunction", "OpenParens", "Number"].includes(
+      next.tokenType.name
+    )
   ) {
     return false;
   }
@@ -189,6 +192,7 @@ export const operatorTokenNames = [
   "Comma",
   "Cell",
   "Function",
+  "ExcelRefFunction",
   // "Colon",
   // "Semicolon",
   "OpenParen",

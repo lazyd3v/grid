@@ -178,4 +178,17 @@ describe("Parsing", () => {
     let showCursor: boolean = showCellSuggestions(editor, tokens);
     expect(showCursor).toBeFalsy();
   });
+  it("Should show suggestion cursor after functions", () => {
+    const app = render(<App />);
+    let [value, distance] = cleanup("=INDEX(<cursor>");
+    editor.insertNode({
+      text: value,
+    });
+    Transforms.move(editor, { unit: "line", reverse: true });
+    Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
+    const tokens: Token[] = normalizeTokens(value);
+
+    let showCursor: boolean = showCellSuggestions(editor, tokens);
+    expect(showCursor).toBeTruthy();
+  });
 });
