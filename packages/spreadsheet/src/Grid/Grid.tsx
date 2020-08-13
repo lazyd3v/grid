@@ -393,6 +393,11 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     useEffect(() => {
       onSheetChangeRef.current = debounce(onSheetChange, 100);
       debounceScroll.current = debounce(onScroll, 500);
+
+      return () => {
+        onSheetChangeRef.current = void 0;
+        debounceScroll.current = void 0;
+      };
     }, []);
 
     /* Update locked ref */
@@ -1158,6 +1163,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       submitEditor,
       cancelEditor,
       showEditor,
+      editingCell,
       ...editableProps
     } = useEditable({
       onBeforeEdit: (cell: CellInterface) => {

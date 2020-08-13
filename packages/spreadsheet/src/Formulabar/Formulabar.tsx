@@ -86,7 +86,7 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
             onChange?.(e.target.value)
           }
           onBlur={onBlur}
-          value={value}
+          value={value ?? ""}
           onKeyDown={onKeyDown}
           onFocus={onFocus}
           height={"100%"}
