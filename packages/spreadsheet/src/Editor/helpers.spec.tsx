@@ -6,7 +6,7 @@ import {
   Editable,
   withReact,
   ReactEditor,
-  RenderLeafProps
+  RenderLeafProps,
 } from "slate-react";
 import { withHistory } from "slate-history";
 import { normalizeTokens } from "./../formulas/helpers";
@@ -17,7 +17,7 @@ import {
   showCellSuggestions,
   getPreviousToken,
   getCurrentToken,
-  getSurroundingTokens
+  getSurroundingTokens,
 } from "./helpers";
 
 describe("Parsing", () => {
@@ -51,7 +51,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     ReactEditor.focus(editor);
     editor.insertNode({
-      text: value
+      text: value,
     });
     const start = getCurrentCursorOffset(editor);
     expect(start).toBeDefined();
@@ -62,7 +62,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     const [value, distance] = cleanup("=S<cursor>UM(A1:A2)");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -75,7 +75,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     const [value, distance] = cleanup("=SUM(SEAR<cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -88,7 +88,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     const [value, distance] = cleanup("=SUM(A1, A2, IF<cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -101,7 +101,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SUM(A1, A2, <cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -115,7 +115,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SUM(A1, A2<cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -129,7 +129,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SUM(A1, A2) <cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -143,7 +143,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SUM(A1,A2) + B1  <cursor>");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -156,7 +156,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SUM(A1,<cursor>2)");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>
@@ -169,7 +169,7 @@ describe("Parsing", () => {
     const app = render(<App />);
     let [value, distance] = cleanup("=SU<cursor>M()");
     editor.insertNode({
-      text: value
+      text: value,
     });
     Transforms.move(editor, { unit: "line", reverse: true });
     Transforms.move(editor, { unit: "character", distance }); // User's cursor is at =S<cursor>

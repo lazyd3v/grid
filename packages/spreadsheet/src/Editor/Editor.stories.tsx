@@ -63,5 +63,5 @@ export const FormulaEditor = () => {
 
 export default {
   title: "Editor",
-  component: TextEditor
+  component: TextEditor,
 };

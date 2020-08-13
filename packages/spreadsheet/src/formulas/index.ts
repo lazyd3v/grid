@@ -11,14 +11,14 @@ export function importData(arg: FunctionArgument | undefined) {
     throw new FormulaError("#N/A", "Wrong number of arguments provided.");
   const { value } = arg;
   return fetch(value.toString())
-    .then(response => {
+    .then((response) => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
       return response;
     })
-    .then(response => response.text())
-    .then(response => {
+    .then((response) => response.text())
+    .then((response) => {
       const separator = value.toString().endsWith("tsv") ? "\t" : ",";
       const data = [];
       const rows = response.split("\n");
@@ -28,16 +28,16 @@ export function importData(arg: FunctionArgument | undefined) {
       }
       return data;
     })
-    .catch(err => {
+    .catch((err) => {
       throw new FormulaError("#NA", err.toString());
     });
 }
 
 export function min(...arg: FunctionArgument[]) {
-  return Math.min(...arg.map(item => Number(item.value)));
+  return Math.min(...arg.map((item) => Number(item.value)));
 }
 export function max(...arg: FunctionArgument[]) {
-  return Math.max(...arg.map(item => Number(item.value)));
+  return Math.max(...arg.map((item) => Number(item.value)));
 }
 
 export function hyperLink(
@@ -53,7 +53,7 @@ export function hyperLink(
   return JSON.stringify({
     title: titleArg?.value,
     hyperlink: urlArg?.value,
-    datatype: "hyperlink"
+    datatype: "hyperlink",
   });
 }
 
@@ -62,7 +62,7 @@ export const formulas = {
   IMPORTDATA: importData,
   MIN: min,
   MAX: max,
-  HYPERLINK: hyperLink
+  HYPERLINK: hyperLink,
 };
 
 export { FormulaError };

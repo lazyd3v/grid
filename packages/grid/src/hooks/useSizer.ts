@@ -5,7 +5,7 @@ import {
   HiddenType,
   isNull,
   autoSizerCanvas,
-  castToString
+  castToString,
 } from "./../helpers";
 import invariant from "tiny-invariant";
 
@@ -146,7 +146,7 @@ const useAutoSizer = ({
   scale = 1,
   isHiddenRow,
   isHiddenColumn,
-  getText = defaultGetText
+  getText = defaultGetText,
 }: IProps): AutoResizerResults => {
   invariant(
     !(resizeStrategy === "full" && rowCount === void 0),
@@ -162,7 +162,7 @@ const useAutoSizer = ({
     visibleRowStartIndex: 0,
     visibleRowStopIndex: 0,
     visibleColumnStartIndex: 0,
-    visibleColumnStopIndex: 0
+    visibleColumnStopIndex: 0,
   });
   const isMounted = useRef(false);
   const getValueRef = useRef<typeof getValue>();
@@ -205,7 +205,7 @@ const useAutoSizer = ({
       const cellValue =
         getValueRef.current?.({
           rowIndex,
-          columnIndex
+          columnIndex,
         }) ?? null;
       let width = cellValue?.spacing ?? 0;
       /* Check if its null */
@@ -221,7 +221,7 @@ const useAutoSizer = ({
             autoSizer.current.setFont({
               fontWeight: isBold ? "bold" : "normal",
               fontSize: (cellValue.fontSize || fontSize) * scale,
-              fontFamily: cellValue.fontFamily
+              fontFamily: cellValue.fontFamily,
             });
           }
 
@@ -292,7 +292,7 @@ const useAutoSizer = ({
         if (!isMounted.current) return;
         debounceResizer.current({
           rowIndex: cells.rowStartIndex,
-          columnIndex: cells.columnStartIndex
+          columnIndex: cells.columnStartIndex,
         });
       }
     },
@@ -304,7 +304,7 @@ const useAutoSizer = ({
     getColumnWidth,
     // getRowHeight,
     onViewChange: handleViewChange,
-    getTextMetrics
+    getTextMetrics,
   };
 };
 

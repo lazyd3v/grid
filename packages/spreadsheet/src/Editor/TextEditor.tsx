@@ -5,7 +5,7 @@ import React, {
   useState,
   useEffect,
   useImperativeHandle,
-  useCallback
+  useCallback,
 } from "react";
 import {
   createEditor,
@@ -13,14 +13,14 @@ import {
   Transforms,
   NodeEntry,
   Editor,
-  Point
+  Point,
 } from "slate";
 import {
   Slate,
   Editable,
   withReact,
   ReactEditor,
-  RenderLeafProps
+  RenderLeafProps,
 } from "slate-react";
 import { withHistory } from "slate-history";
 import {
@@ -28,7 +28,7 @@ import {
   KeyCodes,
   SelectionArea,
   castToString,
-  NewSelectionMode
+  NewSelectionMode,
 } from "@rowsncolumns/grid";
 import useShiftDown from "../hooks/useShiftDown";
 import { useColorMode, useTheme, Box } from "@chakra-ui/core";
@@ -36,12 +36,12 @@ import {
   DARK_MODE_COLOR,
   FORMULA_FONT,
   FORMULA_FONT_SIZE,
-  isAFormula
+  isAFormula,
 } from "../constants";
 import {
   normalizeTokens,
   getSelectionColorAtIndex,
-  selectionToAddress
+  selectionToAddress,
 } from "./../formulas/helpers";
 import { Token } from "fast-formula-parser/grammar/lexing";
 import { FormulaChangeProps } from "../Grid/Grid";
@@ -51,7 +51,7 @@ import {
   getCurrentToken,
   showCellSuggestions,
   isCurrentPositionACell,
-  cleanFunctionToken
+  cleanFunctionToken,
 } from "./helpers";
 import { SheetID } from "../Spreadsheet";
 
@@ -98,7 +98,7 @@ const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
       {...attributes}
       className={leaf.cursor ? "insert-range-indicator" : void 0}
       style={{
-        color: leaf.color as string
+        color: leaf.color as string,
       }}
     >
       {children}
@@ -125,7 +125,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       isFormulaMode,
       autoFocus,
       supportedFormulas = [],
-      onFormulaChange
+      onFormulaChange,
     } = props;
     const [suggestionToken, setSuggestionToken] = useState<Token>();
     const [cursorToken, setCursorSuggestionToken] = useState<
@@ -137,7 +137,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         return (castToString(value) ?? "").split("\n").map((line: string) => {
           const children = [{ text: line }];
           return {
-            children
+            children,
           };
         });
       },
@@ -145,9 +145,9 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
     );
     const deserialize = useCallback((value: Node[]) => {
       return value
-        .map(element => {
+        .map((element) => {
           // @ts-ignore
-          return element.children.map(leaf => leaf.text).join("");
+          return element.children.map((leaf) => leaf.text).join("");
         })
         .join("\n");
     }, []);
@@ -164,7 +164,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           Transforms.delete(editor, {
             at: start,
             distance: target.image.length,
-            reverse: true
+            reverse: true,
           });
         }
         if (address) {
@@ -187,7 +187,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
               ReactEditor.focus(editor);
             });
           },
-          updateSelection: handleUpdateSelection
+          updateSelection: handleUpdateSelection,
         };
       },
       [target]
@@ -218,7 +218,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       onMouseDown,
       onClick,
       isOpen,
-      openMenu
+      openMenu,
     } = useShiftDown({
       showAllIfEmpty: !isFormulaMode,
       defaultHighlightedIndex: isFormulaMode ? 0 : null,
@@ -226,7 +226,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       initialIsOpen: isFormulaMode ? false : (options?.length ?? 0) > 0,
       initialSelectedItem: initialValue,
       options: isFormulaMode ? supportedFormulas : options,
-      onChange: item => {
+      onChange: (item) => {
         if (isFormulaMode && item !== void 0) {
           const text = suggestionToken?.image;
           const start = getCurrentCursorOffset(editor);
@@ -235,12 +235,12 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           }
           const startToken = {
             ...start,
-            offset: suggestionToken?.startOffset ?? 0
+            offset: suggestionToken?.startOffset ?? 0,
           };
           if (start) {
             Transforms.delete(editor, {
               at: startToken,
-              distance: text?.length
+              distance: text?.length,
             });
 
             Transforms.insertNodes(editor, [{ text: `${item as string}(` }]);
@@ -248,7 +248,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           return;
         }
         onSubmit?.(item as string);
-      }
+      },
     });
 
     useEffect(() => {
@@ -274,11 +274,11 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             ranges.push({
               anchor: { path, offset: cursorToken.offset },
               focus: { path, offset: cursorToken.offset },
-              cursor: true
+              cursor: true,
             });
           }
           let prevToken: Token;
-          tokens.forEach(token => {
+          tokens.forEach((token) => {
             let add = token.startOffset - (prevToken?.endColumn ?? 0);
             ranges.push({
               anchor: { path, offset: offset + token.image.length + add },
@@ -291,7 +291,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                   ? "green"
                   : token.tokenType.name === "Number"
                   ? "#15c"
-                  : void 0
+                  : void 0,
             });
 
             prevToken = token;
@@ -354,13 +354,13 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
             lineHeight: "normal",
             textDecoration: underline ? "underline" : "none",
             cursor: "text",
-            flex: 1
+            flex: 1,
           }}
         >
           <Slate
             editor={editor}
             value={value}
-            onChange={value => {
+            onChange={(value) => {
               setValue(value);
               const isFormula = isAFormula(deserialize(value));
               if (isFormula) {
@@ -395,7 +395,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
 
                 onFormulaChange?.({
                   showCellSuggestion: !!showCellSuggestion || !!isCell,
-                  newSelectionMode: showCellSuggestion ? "append" : "modify"
+                  newSelectionMode: showCellSuggestion ? "append" : "modify",
                 });
 
                 setCursorSuggestionToken(
@@ -406,7 +406,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           >
             <Editable
               decorate={decorate}
-              renderLeaf={props => <Leaf {...props} />}
+              renderLeaf={(props) => <Leaf {...props} />}
               onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                 const isShiftKey = e.nativeEvent.shiftKey;
                 const isMetaKey =
@@ -490,8 +490,9 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                   color={inputColor}
                   cursor="pointer"
                   fontFamily={isFormulaMode ? FORMULA_FONT : fontFamily}
-                  fontSize={`${(isFormulaMode ? FORMULA_FONT_SIZE : fontSize) *
-                    scale}px`}
+                  fontSize={`${
+                    (isFormulaMode ? FORMULA_FONT_SIZE : fontSize) * scale
+                  }px`}
                   onMouseMove={() => onMouseMove?.(index)}
                   onMouseDown={onMouseDown}
                   onClick={() => onClick?.(item)}
@@ -503,7 +504,7 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                         ? isLight
                           ? theme.colors.gray[100]
                           : "rgba(255,255,255,0.06)"
-                        : dropdownBgColor
+                        : dropdownBgColor,
                   }}
                 >
                   {item}

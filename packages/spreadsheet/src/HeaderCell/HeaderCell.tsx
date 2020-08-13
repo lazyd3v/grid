@@ -3,7 +3,7 @@ import { Cell, RendererProps } from "@rowsncolumns/grid";
 import {
   number2Alpha,
   DARK_MODE_COLOR,
-  HEADER_BORDER_COLOR
+  HEADER_BORDER_COLOR,
 } from "../constants";
 import { Rect } from "react-konva";
 import { ShapeConfig } from "konva/types/Shape";
@@ -44,7 +44,7 @@ interface DraggableRectProps
   parentHeight?: number;
 }
 const DRAG_HANDLE_WIDTH = 5;
-const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
+const DraggableRect: React.FC<DraggableRectProps> = memo((props) => {
   const {
     axis = AXIS.X,
     x = 0,
@@ -63,7 +63,7 @@ const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
     ...rest
   } = props;
   const index = useMemo(() => (axis === AXIS.X ? columnIndex : rowIndex), [
-    axis
+    axis,
   ]);
   const dragStartPos = useRef<number>();
   const dragStartDim = useRef<number>();
@@ -75,8 +75,8 @@ const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
       strokeScaleEnabled={false}
       shadowForStrokeEnable={false}
       hitStrokeWidth={5}
-      onMouseDown={e => e.evt.stopPropagation()}
-      dragBoundFunc={pos => {
+      onMouseDown={(e) => e.evt.stopPropagation()}
+      dragBoundFunc={(pos) => {
         if (dragStartPos.current === void 0 || dragStartDim.current === void 0)
           return pos;
         const _x =
@@ -95,10 +95,10 @@ const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
               );
         return {
           x: _x,
-          y: _y
+          y: _y,
         };
       }}
-      onDragMove={e => {
+      onDragMove={(e) => {
         const node = e.target;
         const dimension =
           axis === AXIS.X
@@ -107,10 +107,10 @@ const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
 
         onResize?.(axis, index, dimension / scale);
       }}
-      onTouchStart={e => {
+      onTouchStart={(e) => {
         e.evt.stopPropagation();
       }}
-      onDragStart={e => {
+      onDragStart={(e) => {
         const clientRect = e.currentTarget.getClientRect();
         dragStartPos.current = axis === AXIS.X ? clientRect.x : clientRect.y;
         dragStartDim.current = axis === AXIS.X ? parentWidth : parentHeight;
@@ -124,7 +124,7 @@ const DraggableRect: React.FC<DraggableRectProps> = memo(props => {
   );
 });
 
-const HeaderCell: React.FC<HeaderCellProps> = memo(props => {
+const HeaderCell: React.FC<HeaderCellProps> = memo((props) => {
   const [showResizer, setShowResizer] = useState(false);
   const {
     rowIndex,
@@ -135,7 +135,7 @@ const HeaderCell: React.FC<HeaderCellProps> = memo(props => {
     width = 0,
     height = 0,
     isLightMode,
-    theme
+    theme,
   } = props;
   const {
     onResize,

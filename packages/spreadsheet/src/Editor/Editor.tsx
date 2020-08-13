@@ -4,14 +4,14 @@ import React, {
   useEffect,
   useState,
   forwardRef,
-  useMemo
+  useMemo,
 } from "react";
 import {
   autoSizerCanvas,
   Direction,
   EditorProps,
   SelectionArea,
-  NewSelectionMode
+  NewSelectionMode,
 } from "@rowsncolumns/grid";
 import TextEditor from "./TextEditor";
 import { useColorMode } from "@chakra-ui/core";
@@ -21,7 +21,7 @@ import {
   DEFAULT_CELL_PADDING,
   sanitizeSheetName,
   FORMULA_FONT,
-  FORMULA_FONT_SIZE
+  FORMULA_FONT_SIZE,
 } from "../constants";
 import { EditorType } from "../types";
 import { ExtraEditorProps } from "../Grid/Grid";
@@ -117,17 +117,17 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
     const textSizer = useRef(autoSizerCanvas);
     const { x = 0, y = 0, width = 0, height = 0 } = position;
     const getInputDims = useCallback(
-      text => {
+      (text) => {
         /*  Set font */
         textSizer.current.setFont({
           fontSize: isFormulaMode ? FORMULA_FONT_SIZE : fontSize,
           fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
-          scale
+          scale,
         });
 
         const {
           width: measuredWidth,
-          height: measuredHeight
+          height: measuredHeight,
         } = textSizer.current.measureText(text);
 
         return [
@@ -143,7 +143,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
               DEFAULT_CELL_PADDING +
               (isFormulaMode ? 0 : borderWidth),
             height
-          )
+          ),
         ];
       },
       [width, height, fontSize, fontFamily, wrapping, scale, isFormulaMode]
@@ -178,7 +178,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
       hasScrollPositionChanged.current || hasSheetChanged.current;
     /* Change */
     const handleChange = useCallback(
-      value => {
+      (value) => {
         onChange?.(value, cell);
       },
       [cell]
@@ -209,7 +209,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
           border: "2px #1a73e8 solid",
           background: backgroundColor,
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
         }}
       >
         {showAddress ? (
@@ -227,7 +227,7 @@ const Editor: React.FC<CustomEditorProps & RefAttribute> = forwardRef(
               bottom: "100%",
               background: "#4589eb",
               color: "white",
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
             }}
           >
             {hasSheetChanged.current ? sanitizeSheetName(sheetName) + "!" : ""}

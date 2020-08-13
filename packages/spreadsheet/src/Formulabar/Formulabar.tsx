@@ -4,7 +4,7 @@ import {
   InputLeftAddon,
   Input,
   useColorMode,
-  useTheme
+  useTheme,
 } from "@chakra-ui/core";
 import {
   DARK_MODE_COLOR,
@@ -12,7 +12,7 @@ import {
   FORMULA_FONT,
   SYSTEM_FONT,
   isAFormula,
-  FORMULA_FONT_SIZE
+  FORMULA_FONT_SIZE,
 } from "./../constants";
 
 interface FormulabarProps {
@@ -36,7 +36,7 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
       onKeyDown,
       onFocus,
       onBlur,
-      isFormulaMode
+      isFormulaMode,
     } = props;
     const isFormula = isAFormula(value) || isFormulaMode;
     const { colorMode } = useColorMode();
@@ -82,7 +82,9 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
           borderColor={borderColor}
           color={color}
           focusBorderColor={borderColor}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange?.(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange?.(e.target.value)
+          }
           onBlur={onBlur}
           value={value}
           onKeyDown={onKeyDown}
@@ -93,7 +95,7 @@ const Formulabar: React.FC<FormulabarProps & FormulaRef> = memo(
           ref={forwardedRef}
           transition="none"
           _focus={{
-            boxShadow: "none"
+            boxShadow: "none",
           }}
           fontFamily={isFormula ? FORMULA_FONT : SYSTEM_FONT}
         />

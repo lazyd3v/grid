@@ -4,7 +4,7 @@ import {
   INVALID_COLOR,
   HYPERLINK_COLOR,
   ERROR_COLOR,
-  INFO_COLOR
+  INFO_COLOR,
 } from "../constants";
 import { Box, Link } from "@chakra-ui/core";
 import { CellConfig } from "../Spreadsheet";
@@ -38,7 +38,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   hyperlink,
   text,
   onMouseEnter,
-  onMouseLeave
+  onMouseLeave,
 }) => {
   const title =
     variant === "invalid" ? "Invalid:" : variant === "error" ? "Error:" : "";
@@ -67,7 +67,7 @@ const Tooltip: React.FC<TooltipProps> = ({
         borderLeft: `4px ${variantColor} solid`,
         backfaceVisibility: "hidden",
         userSelect: "none",
-        wordBreak: "break-word"
+        wordBreak: "break-word",
       }}
       onMouseLeave={onMouseLeave}
       onMouseEnter={onMouseEnter}
@@ -115,7 +115,7 @@ const HyperLink: React.FC<TooltipContentProps> = ({ title, url }) => {
 const Alert: React.FC<TooltipContentProps> = ({
   title,
   content,
-  variantColor
+  variantColor,
 }) => {
   return (
     <>

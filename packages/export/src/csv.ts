@@ -2,7 +2,7 @@ import {
   Sheet,
   CellConfig,
   uuid,
-  createNewSheet
+  createNewSheet,
 } from "@rowsncolumns/spreadsheet";
 import { ParseProps, ParseResults } from "./excel";
 
@@ -36,7 +36,7 @@ export const createCSVFromSheets = async (sheets: Sheet[]): Promise<string> => {
 export const parseCSV = ({ file }: ParseProps): Promise<ParseResults> => {
   let resolver: (value: ParseResults) => void | null;
   const sheetPromise: Promise<ParseResults> = new Promise(
-    resolve => (resolver = resolve)
+    (resolve) => (resolver = resolve)
   );
   const reader = new FileReader();
   const sheet = createNewSheet({ count: 1 });
@@ -56,13 +56,13 @@ export const parseCSV = ({ file }: ParseProps): Promise<ParseResults> => {
         const text = columns[j];
         if (text === void 0) continue;
         sheet.cells[rowIndex][columnIndex] = {
-          text: columns[j]
+          text: columns[j],
         };
       }
     }
 
     resolver({
-      sheets: [sheet]
+      sheets: [sheet],
     });
   };
   /* Start reading the file */

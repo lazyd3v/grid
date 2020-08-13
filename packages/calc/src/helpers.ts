@@ -50,7 +50,7 @@ export const addressToCell = (address: string): CellInterface | null => {
   const [columnAlpha, rowIndex] = matches;
   return {
     rowIndex: parseInt(rowIndex),
-    columnIndex: alpha2number(columnAlpha)
+    columnIndex: alpha2number(columnAlpha),
   };
 };
 
@@ -88,7 +88,7 @@ export const createPosition = (id: Sheet, row = 1, col = 1): CellPosition => {
   return {
     sheet: id,
     row,
-    col
+    col,
   };
 };
 

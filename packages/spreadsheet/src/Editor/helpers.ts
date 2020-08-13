@@ -16,7 +16,7 @@ export const functionSuggestion = (
     const range = Editor.range(editor, start, charBefore);
     const str = Editor.string(editor, range);
     const token = tokens.find(
-      token =>
+      (token) =>
         start.offset >= token.startOffset && start.offset <= token.endColumn
     );
 
@@ -56,13 +56,13 @@ export const showCellSuggestions = (editor: Editor, tokens: Token[]) => {
     "Comma",
     "Function",
     "ExcelConditionalRefFunction",
-    "QuoteS"
+    "QuoteS",
   ];
   const parens = [
     "CloseParen",
     "CloseSquareParen",
     "CloseCurlyParen",
-    "QuoteS"
+    "QuoteS",
   ];
   const nextOps = ["Comma", ...parens];
   // console.log('d', start, prevToken, curToken, nextToken)
@@ -131,7 +131,7 @@ export const getCurrentToken = (tokens: Token[], editor: Editor) => {
   const { selection } = editor;
   if (selection && Range.isCollapsed(selection)) {
     const [start] = Range.edges(selection);
-    return tokens.find(token => token.endColumn >= start.offset);
+    return tokens.find((token) => token.endColumn >= start.offset);
   }
   return void 0;
 };
@@ -162,7 +162,7 @@ export const getNextToken = (
 ): Token | undefined => {
   const start = getCurrentCursorOffset(editor);
   if (!start) return void 0;
-  return tokens.find(token => {
+  return tokens.find((token) => {
     return token.startOffset >= start.offset;
   });
 };
@@ -181,7 +181,7 @@ export const operators = [
   "LteOp",
   "GtOp",
   "EqOp",
-  "LtOp"
+  "LtOp",
 ];
 
 export const operatorTokenNames = [
@@ -199,7 +199,7 @@ export const operatorTokenNames = [
   // "OpenCurlyParen",
   // "CloseCurlyParen",
   // "QuoteS",
-  ...operators
+  ...operators,
 ];
 
 export const createSlateChildren = (text: string) => {
@@ -211,7 +211,7 @@ export const createSlateChildren = (text: string) => {
     leafs.push({
       text: (prevToken !== token.startOffset ? " " : "") + token.image,
       index: token.index,
-      selection: !!token.sel
+      selection: !!token.sel,
     });
     prevToken = token.endColumn;
   }

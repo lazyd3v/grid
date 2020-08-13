@@ -2,7 +2,7 @@ import {
   parseExcel,
   createExcelFileFromSheets,
   ParseProps,
-  ParseResults
+  ParseResults,
 } from "./excel";
 import { parseCSV, createCSVFromSheets } from "./csv";
 import { Sheet } from "@rowsncolumns/spreadsheet";
@@ -17,7 +17,7 @@ export interface DownloadProps {
 
 export enum MIMETYPES {
   CSV = "text/csv",
-  EXCEL = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  EXCEL = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
 export const canUseDOM = !!(
@@ -33,14 +33,14 @@ export const canUseDOM = !!(
 export const download = async ({
   sheets = [],
   filename = "download",
-  type = "excel"
+  type = "excel",
 }: DownloadProps): Promise<Blob | void> => {
   switch (type) {
     case "excel": {
       const buffer = await createExcelFileFromSheets(sheets);
       const blob = new Blob([buffer], {
         type:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       if (!canUseDOM) return blob;
       const url = window.URL.createObjectURL(blob);
