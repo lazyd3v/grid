@@ -7,6 +7,7 @@ import { addressToCell, cellToAddress } from "./../constants";
 import { CellInterface, SelectionArea } from "@rowsncolumns/grid";
 import { FormulaSelection } from "../Grid/Grid";
 import { SheetID } from "../Spreadsheet";
+import { Direction } from "@rowsncolumns/grid";
 
 export const TOKEN_TYPE_CELL = "Cell";
 export const getSelectionColorAtIndex = (key: number) => {
@@ -80,7 +81,7 @@ export const getSelectionsFromInput = (
 ) => {
   const selections = [];
   try {
-    const { tokens } = lex(text);
+    const { tokens } = tokenize(text);
     let len = tokens.length;
     let i = 0;
     let activeSheet = null;
@@ -131,7 +132,7 @@ export const normalizeTokens = (text: string | undefined): Token[] => {
   const normalizedTokens: Token[] = [];
   if (text === void 0) return normalizedTokens;
   try {
-    const { tokens } = lex(text);
+    const { tokens } = tokenize(text);
     let len = tokens.length;
     let i = 0;
     let selIndex = -1;
@@ -200,6 +201,87 @@ export const normalizeTokens = (text: string | undefined): Token[] => {
   } catch (err) {
     return normalizedTokens;
   }
+};
+
+/**
+ * Tokenize a text
+ * @param text
+ */
+export const tokenize = (text: string) => {
+  return lex(text);
+};
+
+/**
+ * Converts tokens to string
+ * @param tokens
+ */
+export const detokenize = (tokens: Token[]) => {
+  let prevOffset;
+  let str = "";
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    str +=
+      (prevOffset && prevOffset !== token.startOffset ? " " : "") + token.image;
+    prevOffset = token.endColumn;
+  }
+  return str;
+};
+
+/**
+ * Fill formula
+ * @param formula
+ * @param index
+ * @param direction
+ */
+export const fillFormula = (
+  formula: React.ReactText | undefined,
+  index: number,
+  direction: Direction
+) => {
+  if (formula === void 0) {
+    return formula;
+  }
+  const { tokens } = tokenize(formula as string);
+  let newTokens = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (token.tokenType.name === tokenVocabulary.Cell.name) {
+      const cell = addressToCell(token.image);
+      switch (direction) {
+        case Direction.Down: {
+          if (cell) {
+            cell.rowIndex = index;
+          }
+          token.image = cellToAddress(cell) as string;
+          break;
+        }
+        case Direction.Right: {
+          if (cell) {
+            cell.columnIndex = index;
+          }
+          token.image = cellToAddress(cell) as string;
+          break;
+        }
+        case Direction.Left: {
+          if (cell) {
+            cell.columnIndex = index;
+          }
+          token.image = cellToAddress(cell) as string;
+          break;
+        }
+        case Direction.Up: {
+          if (cell) {
+            cell.rowIndex = index;
+          }
+          token.image = cellToAddress(cell) as string;
+          break;
+        }
+      }
+    }
+    newTokens.push(token);
+  }
+
+  return detokenize(newTokens);
 };
 
 export { tokenVocabulary };

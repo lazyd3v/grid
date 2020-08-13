@@ -9,7 +9,12 @@ import {
   RenderLeafProps,
 } from "slate-react";
 import { withHistory } from "slate-history";
-import { normalizeTokens } from "./../formulas/helpers";
+import {
+  normalizeTokens,
+  tokenize,
+  detokenize,
+  fillFormula,
+} from "./../formulas/helpers";
 import { render, cleanup, fireEvent, act } from "@testing-library/react";
 import {
   getCurrentCursorOffset,
@@ -19,6 +24,7 @@ import {
   getCurrentToken,
   getSurroundingTokens,
 } from "./helpers";
+import { Direction } from "@rowsncolumns/grid";
 
 describe("Parsing", () => {
   let editor: Editor & ReactEditor;
@@ -190,5 +196,56 @@ describe("Parsing", () => {
 
     let showCursor: boolean = showCellSuggestions(editor, tokens);
     expect(showCursor).toBeTruthy();
+  });
+});
+
+describe("tokenize/detokenize", () => {
+  const text = "=SUM(A1, 20)";
+  it("tokenizes", () => {
+    const { tokens } = tokenize(text);
+    expect(tokens.length).toBe(6);
+  });
+
+  it("detokenizes", () => {
+    const { tokens } = tokenize(text);
+    expect(detokenize(tokens)).toBe(text);
+  });
+});
+
+describe("fillFormula", () => {
+  it("can fill formulas downwards", () => {
+    const newformula = fillFormula("=SUM(A1,2)", 2, Direction.Down);
+    expect(newformula).toBe("=SUM(A2,2)");
+
+    expect(fillFormula("=SUM(Sheet1!A1,2)", 2, Direction.Down)).toBe(
+      "=SUM(Sheet1!A2,2)"
+    );
+  });
+
+  it("can fill formulas upwards", () => {
+    const newformula = fillFormula("=SUM(A2,2)", 1, Direction.Up);
+    expect(newformula).toBe("=SUM(A1,2)");
+
+    expect(fillFormula("=SUM(Sheet1!A2,2)", 1, Direction.Up)).toBe(
+      "=SUM(Sheet1!A1,2)"
+    );
+  });
+
+  it("can fill formulas to the right", () => {
+    const newformula = fillFormula("=SUM(A1,2)", 2, Direction.Right);
+    expect(newformula).toBe("=SUM(B1,2)");
+
+    expect(fillFormula("=SUM(Sheet1!A1,2)", 2, Direction.Right)).toBe(
+      "=SUM(Sheet1!B1,2)"
+    );
+  });
+
+  it("can fill formulas to the left", () => {
+    const newformula = fillFormula("=SUM(B1,2)", 1, Direction.Left);
+    expect(newformula).toBe("=SUM(A1,2)");
+
+    expect(fillFormula("=SUM(Sheet1!B1,2)", 1, Direction.Left)).toBe(
+      "=SUM(Sheet1!A1,2)"
+    );
   });
 });
