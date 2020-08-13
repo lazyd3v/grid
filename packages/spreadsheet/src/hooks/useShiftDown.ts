@@ -184,11 +184,14 @@ const useShiftDown = (props: ShiftDownProps): ShiftDownResults => {
     event.preventDefault();
   }, []);
 
-  const handleSetInputValue = useCallback((value: string) => {
-    setInputValue(value);
-    setHighlightedIndex(defaultHighlightedIndex);
-    isDirty.current = true;
-  }, []);
+  const handleSetInputValue = useCallback(
+    (value: string) => {
+      setInputValue(value);
+      setHighlightedIndex(defaultHighlightedIndex);
+      isDirty.current = true;
+    },
+    [defaultHighlightedIndex]
+  );
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);

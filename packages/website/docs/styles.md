@@ -36,7 +36,7 @@ export interface CellFormatting extends CellDataFormatting {
   padding?: number;
   fontSize?: number;
   fontFamily?: string;
-  readOnly?: boolean;
+  locked?: boolean;
   wrap?: string
 }
 ```

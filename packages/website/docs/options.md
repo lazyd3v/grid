@@ -125,7 +125,7 @@ export interface CellConfig  {
   padding?: number;
   fontSize?: number;
   fontFamily?: string;
-  readOnly?: boolean;
+  locked?: boolean;
   wrap?: Wrap;
   rotation?: number;
   dataValidation?: DataValidation;
