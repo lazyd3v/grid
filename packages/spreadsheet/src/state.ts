@@ -96,7 +96,6 @@ export enum ACTION_TYPE {
   REMOVE_CELLS = "REMOVE_CELLS",
   PASTE = "PASTE",
   COPY = "COPY",
-  REPLACE_SHEETS = "REPLACE_SHEETS",
   VALIDATION_SUCCESS = "VALIDATION_SUCCESS",
   SHOW_SHEET = "SHOW_SHEET",
   HIDE_SHEET = "HIDE_SHEET",
@@ -263,7 +262,6 @@ export type ActionTypes =
       newSelection?: SelectionArea[];
       undoable?: boolean;
     }
-  | { type: ACTION_TYPE.REPLACE_SHEETS; sheets: Sheet[]; undoable?: boolean }
   | {
       type: ACTION_TYPE.VALIDATION_SUCCESS;
       id: SheetID;
@@ -338,7 +336,7 @@ export const createStateReducer = ({
 
           case ACTION_TYPE.CHANGE_SHEET_CELL: {
             const sheet = draft.sheets.find((sheet) => sheet.id === action.id);
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = sheet;
               const { cell, value, datatype } = action;
               sheet.cells[cell.rowIndex] = sheet.cells[cell.rowIndex] ?? {};
@@ -346,6 +344,10 @@ export const createStateReducer = ({
                 sheet.cells[cell.rowIndex][cell.columnIndex] ?? {};
               const currentCell =
                 sheet.cells[cell.rowIndex][cell.columnIndex] ?? {};
+              // Skip locked cell
+              if (currentCell.locked) {
+                return;
+              }
               const hasFormulaChanged = currentCell.text !== value;
               currentCell.text = value;
               currentCell.datatype = datatype;
@@ -380,12 +382,17 @@ export const createStateReducer = ({
             const { changes } = action;
             for (const name in changes) {
               const sheet = draft.sheets.find((sheet) => sheet.name == name);
-              if (sheet) {
+              if (sheet && !sheet.locked) {
                 for (const rowIndex in changes[name]) {
                   sheet.cells[rowIndex] = sheet.cells[rowIndex] ?? {};
                   for (const columnIndex in changes[name][rowIndex]) {
                     sheet.cells[rowIndex][columnIndex] =
                       sheet.cells[rowIndex][columnIndex] ?? {};
+
+                    // Skip locked cell
+                    if (sheet.cells[rowIndex][columnIndex].locked) {
+                      continue;
+                    }
                     const values = changes[name][rowIndex][columnIndex];
                     for (const key in values) {
                       const value = values[key];
@@ -413,11 +420,16 @@ export const createStateReducer = ({
 
           case ACTION_TYPE.VALIDATION_SUCCESS: {
             const sheet = draft.sheets.find((sheet) => sheet.id === action.id);
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { valid, cell, prompt } = action;
               sheet.cells[cell.rowIndex] = sheet.cells[cell.rowIndex] ?? {};
               sheet.cells[cell.rowIndex][cell.columnIndex] =
                 sheet.cells[cell.rowIndex][cell.columnIndex] ?? {};
+
+              // Skip locked cell
+              if (sheet.cells[cell.rowIndex][cell.columnIndex].locked) {
+                return;
+              }
               const currentCell = sheet.cells[cell.rowIndex][cell.columnIndex];
               if (valid !== void 0) {
                 currentCell.valid = valid;
@@ -436,7 +448,7 @@ export const createStateReducer = ({
            */
           case ACTION_TYPE.UPDATE_FILL: {
             const sheet = draft.sheets.find((sheet) => sheet.id === action.id);
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, fillSelection, selections } = action;
               const sel = selections.length
                 ? selections[selections.length - 1]
@@ -469,6 +481,10 @@ export const createStateReducer = ({
                     const cellConfig = {
                       ...sheet.cells?.[curSelRowIndex]?.[j],
                     };
+                    // Skip locked cell
+                    if (sheet.cells[i][i]?.locked) {
+                      continue;
+                    }
                     sheet.cells[i][j] = cellConfig;
                     if (cellConfig?.datatype === "formula") {
                       delete sheet.cells[i][j]?.result;
@@ -502,6 +518,10 @@ export const createStateReducer = ({
                     const cellConfig = {
                       ...sheet.cells?.[curSelRowIndex]?.[j],
                     };
+                    // Skip locked cell
+                    if (sheet.cells[i][i]?.locked) {
+                      continue;
+                    }
                     sheet.cells[i][j] = cellConfig;
                     if (cellConfig?.datatype === "formula") {
                       delete sheet.cells[i][j]?.result;
@@ -535,6 +555,10 @@ export const createStateReducer = ({
                     const cellConfig = {
                       ...sheet.cells?.[i]?.[curSelColumnIndex],
                     };
+                    // Skip locked cell
+                    if (sheet.cells[i][i]?.locked) {
+                      continue;
+                    }
                     sheet.cells[i][j] = cellConfig;
                     if (cellConfig?.datatype === "formula") {
                       delete sheet.cells[i][j]?.result;
@@ -568,6 +592,10 @@ export const createStateReducer = ({
                     const cellConfig = {
                       ...sheet.cells?.[i]?.[curSelColumnIndex],
                     };
+                    // Skip locked cell
+                    if (sheet.cells[i][i]?.locked) {
+                      continue;
+                    }
                     sheet.cells[i][j] = cellConfig;
                     if (cellConfig?.datatype === "formula") {
                       delete sheet.cells[i][j]?.result;
@@ -592,6 +620,9 @@ export const createStateReducer = ({
           case ACTION_TYPE.DELETE_SHEET: {
             const { id } = action;
             const index = draft.sheets.findIndex((sheet) => sheet.id === id);
+            if (draft.sheets[index].locked) {
+              return;
+            }
             const newSheets = draft.sheets.filter((sheet) => sheet.id !== id);
             const newSelectedSheet =
               draft.selectedSheet === draft.sheets[index].id
@@ -617,7 +648,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = sheet;
               const sel = selections.length
                 ? selections
@@ -633,6 +664,9 @@ export const createStateReducer = ({
                 if (!bounds) continue;
                 for (let j = bounds.top; j <= bounds.bottom; j++) {
                   for (let k = bounds.left; k <= bounds.right; k++) {
+                    if (sheet.cells[j]?.[k].locked) {
+                      continue;
+                    }
                     delete sheet.cells[j]?.[k]?.plaintext;
                   }
                 }
@@ -645,7 +679,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = sheet;
               const sel = selections.length
                 ? selections
@@ -663,6 +697,9 @@ export const createStateReducer = ({
                   sheet.cells[j] = sheet.cells[j] ?? {};
                   for (let k = bounds.left; k <= bounds.right; k++) {
                     sheet.cells[j][k] = sheet.cells[j][k] ?? {};
+                    if (sheet.cells[j][k].locked) {
+                      continue;
+                    }
                     sheet.cells[j][k].plaintext = true;
                   }
                 }
@@ -676,7 +713,7 @@ export const createStateReducer = ({
               (sheet) => sheet.id === action.id
             ) as Sheet;
             const { key, value } = action;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { selections, activeCell } = sheet;
               const sel =
                 selections && selections.length
@@ -689,6 +726,9 @@ export const createStateReducer = ({
                   sheet.cells[j] = sheet.cells[j] ?? {};
                   for (let k = bounds.left; k <= bounds.right; k++) {
                     sheet.cells[j][k] = sheet.cells[j][k] ?? {};
+                    if (sheet.cells[j][k].locked) {
+                      return;
+                    }
                     sheet.cells[j][k][key] = value;
 
                     /* if user is applying a custom number format, remove plaintext */
@@ -709,7 +749,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = action;
               const sel = selections.length
                 ? selections
@@ -721,7 +761,12 @@ export const createStateReducer = ({
                 for (let j = bounds.top; j <= bounds.bottom; j++) {
                   if (sheet.cells[j] === void 0) continue;
                   for (let k = bounds.left; k <= bounds.right; k++) {
-                    if (sheet.cells[j][k] === void 0) continue;
+                    if (
+                      sheet.cells[j][k] === void 0 ||
+                      sheet.cells[j][k]?.locked
+                    ) {
+                      continue;
+                    }
                     const formulaRange = sheet.cells?.[j]?.[k]?.formulaRange;
 
                     clearCellKeepFormatting(sheet.cells[j][k]);
@@ -752,19 +797,25 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = action;
               if (selections.length) {
                 selections.forEach((sel) => {
                   const { bounds } = sel;
                   for (let i = bounds.top; i <= bounds.bottom; i++) {
                     for (let j = bounds.left; j <= bounds.right; j++) {
+                      if (sheet.cells?.[i]?.[j]?.locked) {
+                        continue;
+                      }
                       delete sheet.cells?.[i]?.[j];
                     }
                   }
                 });
               } else if (activeCell) {
                 const { rowIndex, columnIndex } = activeCell;
+                if (sheet.cells?.[rowIndex]?.[columnIndex]?.locked) {
+                  return;
+                }
                 delete sheet.cells?.[rowIndex]?.[columnIndex];
               }
             }
@@ -776,7 +827,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell, selections } = sheet;
               if (selections.length) {
                 selections.forEach((sel) => {
@@ -784,7 +835,12 @@ export const createStateReducer = ({
                   for (let i = bounds.top; i <= bounds.bottom; i++) {
                     if (sheet.cells[i] === void 0) continue;
                     for (let j = bounds.left; j <= bounds.right; j++) {
-                      if (sheet.cells[i][j] === void 0) continue;
+                      if (
+                        sheet.cells[i][j] === void 0 ||
+                        sheet.cells[i][j]?.locked
+                      ) {
+                        continue;
+                      }
                       Object.values(FORMATTING_TYPE).forEach((key) => {
                         delete sheet.cells[i]?.[j]?.[key];
                       });
@@ -796,6 +852,9 @@ export const createStateReducer = ({
                 });
               } else if (activeCell) {
                 const { rowIndex, columnIndex } = activeCell;
+                if (sheet.cells?.[rowIndex]?.[columnIndex]?.locked) {
+                  return;
+                }
                 if (sheet.cells?.[rowIndex]?.[columnIndex]) {
                   Object.values(FORMATTING_TYPE).forEach((key) => {
                     delete sheet.cells[rowIndex]?.[columnIndex]?.[key];
@@ -813,7 +872,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { axis, index, dimension } = action;
               if (axis === AXIS.X) {
                 sheet.columnSizes = sheet.columnSizes ?? {};
@@ -830,7 +889,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { selections, activeCell } = sheet;
               const { bounds } = selections.length
                 ? selections[selections.length - 1]
@@ -867,7 +926,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               sheet.frozenRows = action.count;
             }
             break;
@@ -877,7 +936,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               sheet.frozenColumns = action.count;
             }
             break;
@@ -887,7 +946,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { color, variant, borderStyle } = action;
               const { selections, cells, activeCell } = sheet;
               const sel = selections.length
@@ -936,7 +995,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { columnIndex, filterViewIndex, filter } = action;
               if (filter === void 0) {
                 delete sheet?.filterViews?.[filterViewIndex]?.filters?.[
@@ -962,7 +1021,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell } = action;
               const { columnIndex } = activeCell;
               const { cells } = sheet;
@@ -992,7 +1051,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell } = action;
               const { rowIndex } = activeCell;
               const { cells } = sheet;
@@ -1012,7 +1071,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell } = action;
               const { columnIndex } = activeCell;
               const { cells } = sheet;
@@ -1043,7 +1102,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { activeCell } = action;
               const { rowIndex } = activeCell;
               const { cells } = sheet;
@@ -1064,7 +1123,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { selections } = sheet;
               const { rows, activeCell, selection, newSelection } = action;
               const { rowIndex, columnIndex } = activeCell;
@@ -1077,6 +1136,9 @@ export const createStateReducer = ({
                   const text = row[j];
                   const c = columnIndex + j;
                   cells[r][c] = cells[r][c] ?? {};
+                  if (cells[r][c].locked) {
+                    continue;
+                  }
                   if (typeof text === "object") {
                     // Empty cells in JSON will be `null`
                     if (isNull(text)) {
@@ -1102,6 +1164,9 @@ export const createStateReducer = ({
                 const { bounds } = selection;
                 for (let i = bounds.top; i <= bounds.bottom; i++) {
                   for (let j = bounds.left; j <= bounds.right; j++) {
+                    if (sheet.cells?.[i]?.[j]?.locked) {
+                      continue;
+                    }
                     delete sheet.cells?.[i]?.[j];
                   }
                 }
@@ -1134,16 +1199,10 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               const { value, cell } = action;
               sheet.cells[cell.rowIndex][cell.columnIndex].loading = value;
             }
-            break;
-          }
-
-          case ACTION_TYPE.REPLACE_SHEETS: {
-            (draft.sheets as Sheet[]) = action.sheets;
-            draft.selectedSheet = action.sheets[0].id;
             break;
           }
 
@@ -1195,7 +1254,7 @@ export const createStateReducer = ({
             const sheet = draft.sheets.find(
               (sheet) => sheet.id === action.id
             ) as Sheet;
-            if (sheet) {
+            if (sheet && !sheet.locked) {
               sheet.tabColor = action.color;
             }
             break;

@@ -468,6 +468,7 @@ export const Formula = () => {
             1: {
               text: "20",
               datatype: "number",
+              locked: true,
             },
             2: {
               datatype: "formula",
