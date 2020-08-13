@@ -386,6 +386,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                 const showFnSuggestions = !!fnToken;
                 const showCellSuggestion = showCellSuggestions(editor, tokens);
                 const isCell = isCurrentPositionACell(editor, tokens);
+                const isTokenAtEdgeofCell =
+                  curToken?.endColumn === start.offset;
                 const isNewCell = !isCurrentPositionACell(editor, tokens);
                 if (showFnSuggestions) {
                   setSuggestionToken(fnToken);
@@ -398,7 +400,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
                 setTarget(curToken);
 
                 onFormulaChange?.({
-                  showCellSuggestion: !!showCellSuggestion || !!isCell,
+                  showCellSuggestion:
+                    !!showCellSuggestion || (!!isCell && isTokenAtEdgeofCell),
                   newSelectionMode: showCellSuggestion ? "append" : "modify",
                 });
 
