@@ -454,10 +454,13 @@ export const createStateReducer = ({
                 const start = sel.bounds.bottom + 1;
                 const end = fillBounds.bottom;
                 let counter = 0;
+                let gapCounter = 1;
+                const gap = sel.bounds.bottom - sel.bounds.top + 1;
                 for (let i = start; i <= end; i++) {
                   let curSelRowIndex = sel.bounds.top + counter;
                   if (curSelRowIndex > sel.bounds.bottom) {
                     counter = 0;
+                    gapCounter++;
                     curSelRowIndex = sel.bounds.top;
                   }
                   sheet.cells[i] = sheet.cells[i] ?? {};
@@ -472,7 +475,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        i - start + 1,
+                        gapCounter * gap,
                         direction
                       );
                     }
@@ -484,10 +487,13 @@ export const createStateReducer = ({
                 const start = sel.bounds.top - 1;
                 const end = fillBounds.top;
                 let counter = 0;
+                let gapCounter = -1;
+                const gap = sel.bounds.bottom - sel.bounds.top + 1;
                 for (let i = start; i >= end; i--) {
                   let curSelRowIndex = sel.bounds.bottom + counter;
                   if (curSelRowIndex < sel.bounds.top) {
                     counter = 0;
+                    gapCounter--;
                     curSelRowIndex = sel.bounds.bottom;
                   }
                   sheet.cells[i] = sheet.cells[i] ?? {};
@@ -502,7 +508,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        i - start - 1,
+                        gapCounter * gap,
                         direction
                       );
                     }
@@ -516,10 +522,13 @@ export const createStateReducer = ({
                   const start = sel.bounds.left - 1;
                   const end = fillBounds.left;
                   let counter = 0;
+                  let gapCounter = -1;
+                  const gap = sel.bounds.right - sel.bounds.left + 1;
                   for (let j = start; j >= end; j--) {
                     let curSelColumnIndex = sel.bounds.right + counter;
                     if (curSelColumnIndex < sel.bounds.left) {
                       counter = 0;
+                      gapCounter--;
                       curSelColumnIndex = sel.bounds.right;
                     }
                     /* Current cell config */
@@ -532,7 +541,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        j - start - 1,
+                        gapCounter * gap,
                         direction
                       );
                     }
@@ -546,11 +555,14 @@ export const createStateReducer = ({
                   const start = sel.bounds.right + 1;
                   const end = fillBounds.right;
                   let counter = 0;
+                  let gapCounter = 1;
+                  const gap = sel.bounds.right - sel.bounds.left + 1;
                   for (let j = start; j <= end; j++) {
                     let curSelColumnIndex = sel.bounds.left + counter;
                     if (curSelColumnIndex > sel.bounds.right) {
                       counter = 0;
                       curSelColumnIndex = sel.bounds.left;
+                      gapCounter++;
                     }
                     /* Current cell config */
                     const cellConfig = {
@@ -562,7 +574,7 @@ export const createStateReducer = ({
                       delete sheet.cells[i][j]?.parentCell;
                       sheet.cells[i][j].text = fillFormula(
                         cellConfig.text,
-                        j - start + 1,
+                        gapCounter * gap,
                         direction
                       );
                     }
