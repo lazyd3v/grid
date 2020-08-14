@@ -25,7 +25,7 @@ const formulas = {
 }
 
 return (
-  <SpreadSheet formulas={functions} />
+  <SpreadSheet formulas={formulas} />
 )
 ```
 
@@ -66,7 +66,7 @@ const formulas = {
 }
 
 return (
-  <SpreadSheet formulas={functions} />
+  <SpreadSheet formulas={formulas} />
 )
 ```
 
@@ -89,7 +89,7 @@ const formulas = {
 }
 
 return (
-  <SpreadSheet formulas={functions} />
+  <SpreadSheet formulas={formulas} />
 )
 ```
 
