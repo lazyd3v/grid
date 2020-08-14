@@ -338,7 +338,8 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
           style={{
             fontFamily: isFormulaMode ? FORMULA_FONT : fontFamily,
             fontSize: (isFormulaMode ? FORMULA_FONT_SIZE : fontSize) * scale,
-            fontWeight: bold ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL,
+            fontWeight:
+              bold && !isFormulaMode ? FONT_WEIGHT.BOLD : FONT_WEIGHT.NORMAL,
             width: "100%",
             height: "100%",
             padding: "0 1px",
