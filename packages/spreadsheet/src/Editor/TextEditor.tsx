@@ -311,6 +311,10 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       if (!isFormulaMode) {
         setInputValue(normalizedValue);
       }
+      /* If its the same value skip */
+      if (normalizedValue === initialValue) {
+        return;
+      }
       onChange?.(normalizedValue);
     }, [value]);
 

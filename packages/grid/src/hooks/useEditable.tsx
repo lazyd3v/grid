@@ -746,9 +746,6 @@ const useEditable = ({
   const handleChange = useCallback(
     (newValue: string, activeCell) => {
       if (!currentActiveCellRef.current) return;
-      if (newValue === value) {
-        return;
-      }
       /* Check if the value has changed. Used to conditionally submit if editor is not in focus */
       isDirtyRef.current = newValue !== value;
       setValue(newValue);

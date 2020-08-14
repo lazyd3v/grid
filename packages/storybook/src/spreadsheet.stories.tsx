@@ -494,6 +494,12 @@ export const Formula = () => {
               datatype: "number",
             },
           },
+          7: {
+            3: {
+              datatype: "formula",
+              text: "=C6",
+            },
+          },
           // 2: {
           //   2: {
           //     datatype: "formula",
