@@ -42,17 +42,15 @@ import {
   normalizeTokens,
   getSelectionColorAtIndex,
   selectionToAddress,
-} from "./../formulas/helpers";
-import { Token } from "fast-formula-parser/grammar/lexing";
-import { FormulaChangeProps } from "../Grid/Grid";
-import {
   getCurrentCursorOffset,
   functionSuggestion,
   getCurrentToken,
   showCellSuggestions,
   isCurrentPositionACell,
   cleanFunctionToken,
-} from "./helpers";
+} from "./../formulas/helpers";
+import { Token } from "fast-formula-parser/grammar/lexing";
+import { FormulaChangeProps } from "../Grid/Grid";
 import { SheetID } from "../Spreadsheet";
 import { FONT_WEIGHT } from "../types";
 
