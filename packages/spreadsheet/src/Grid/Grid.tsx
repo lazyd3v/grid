@@ -789,8 +789,6 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
         return true;
       },
     });
-    /* Previous gridSelection */
-    const prevSelections = usePrevious(gridSelections);
 
     /* Focus on the editor */
     const focusEditor = useCallback(() => {
@@ -811,28 +809,26 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     const updateFormulaEditorThrottle = useRef<(...a: any[]) => void>();
 
     useEffect(() => {
-      updateFormulaEditorThrottle.current = throttle(updateFormulaEditor, 50);
+      updateFormulaEditorThrottle.current = throttle(updateFormulaEditor, 60);
     }, [updateFormulaEditor, selectedSheet]);
 
+    /**
+     * TOOD
+     * Check dependency array
+     */
     useEffect(() => {
-      if (
-        isFormulaMode &&
-        !isFormulaInputActive &&
-        !isEqual(gridSelections, prevSelections)
-      ) {
+      if (isFormulaMode) {
         updateFormulaEditorThrottle.current?.(
           gridSelections[gridSelections.length - 1],
           formulaState.newSelectionMode
         );
       }
-    }, [
-      gridSelections,
-      isFormulaMode,
-      isFormulaInputActive,
-      formulaState,
-      selectedSheet,
-    ]);
+    }, [gridSelections]);
 
+    /**
+     * Switch selections to formula selections
+     * If user is in formula mode
+     */
     const selections = isFormulaMode ? formulaSelections : gridSelections;
 
     /**
