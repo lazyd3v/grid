@@ -231,7 +231,7 @@ const initialValidationSheet: Sheet[] = [
   {
     name: "Sheet 1",
     id: 0,
-    activeCell: null,
+    activeCell: { rowIndex: 1, columnIndex: 1 },
     selections: [],
     cells: {
       2: {
@@ -307,7 +307,7 @@ const initialValidationSheet: Sheet[] = [
   {
     name: "Sheet 2",
     id: 2,
-    activeCell: null,
+    activeCell: { rowIndex: 1, columnIndex: 1 },
     selections: [],
     cells: {},
   },

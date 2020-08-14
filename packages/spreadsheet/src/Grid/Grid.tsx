@@ -1187,12 +1187,15 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       },
       hideOnBlur: isFormulaMode ? !formulaState.showCellSuggestion : true,
       onKeyDown: (e) => {
+        const isAltKey = e.altKey;
         /* Pass it on */
         onEditorKeyDown?.(e);
+
         if (
           isFormulaMode &&
           showCellSuggestion &&
-          isArrowKey(e.nativeEvent.which)
+          isArrowKey(e.nativeEvent.which) &&
+          !isAltKey
         ) {
           selectionProps.onKeyDown(e);
         }
