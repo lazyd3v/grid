@@ -15,11 +15,33 @@ describe("Extract cell selection from raw text", () => {
     const selections = getSelectionsFromInput(text, 2);
     expect(selections.length).toBe(1);
   });
-  // it("can parse column range", () => {
-  //   const text = "=A:A";
-  //   const selections = getSelectionsFromInput(text);
-  //   expect(selections.length).toBe(1);
-  // });
 });
 
-describe("normalizeTokens", () => {});
+describe("getSelectionsFromInput", () => {
+  it("can retrieve selections", () => {
+    const selections = getSelectionsFromInput("=SUM(A1,A2)", "Sheet1");
+    expect(selections.length).toBe(2);
+    expect(selections[0].sheet).toBe("Sheet1");
+  });
+
+  it("can retrieve selections cross sheet", () => {
+    const selections = getSelectionsFromInput("=SUM(A1,Sheet2!A2)", "Sheet1");
+    expect(selections.length).toBe(2);
+    expect(selections[1].sheet).toBe("Sheet2");
+  });
+
+  it("can retrieve selections cross sheet", () => {
+    const selections = getSelectionsFromInput("=SUM(A1,Sheet2!A2)", "Sheet1");
+    expect(selections.length).toBe(2);
+    expect(selections[1].sheet).toBe("Sheet2");
+  });
+
+  it("can retrieve selections range", () => {
+    const selections = getSelectionsFromInput(
+      "=SUM(Sheet2!I10:I17,H5:H10)",
+      "Sheet1"
+    );
+    expect(selections.length).toBe(2);
+    expect(selections[0].sheet).toBe("Sheet2");
+  });
+});
