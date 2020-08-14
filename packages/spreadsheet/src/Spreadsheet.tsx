@@ -778,11 +778,10 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     );
 
     /* Keep sheet references in-sync */
-    useEffect(() => {
-      getCellConfigRef.current = getCellConfig;
-      getCellConfigBySheetNameRef.current = getCellConfigBySheetName;
-      getSheetRef.current = getSheet;
-    });
+
+    getCellConfigRef.current = getCellConfig;
+    getCellConfigBySheetNameRef.current = getCellConfigBySheetName;
+    getSheetRef.current = getSheet;
 
     /**
      * Get max rows in a sheet
