@@ -54,6 +54,7 @@ import {
   DEFAULT_CELL_PADDING,
   cellToAddress,
   isAFormula,
+  sanitizeSheetName,
 } from "./../constants";
 import HeaderCell from "./../HeaderCell";
 import Cell from "./../Cell";
@@ -797,10 +798,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
     /* Focus on the editor */
     const updateFormulaEditor = useCallback(
       (sel: SelectionArea | undefined, newSelectionMode: NewSelectionMode) => {
-        const name =
-          selectedSheet !== currentlyEditingSheetId.current
-            ? sheetName
-            : void 0;
+        const name = sanitizeSheetName(
+          selectedSheet !== currentlyEditingSheetId.current ? sheetName : void 0
+        );
         editorRef.current?.updateSelection?.(name, sel, newSelectionMode);
       },
       [selectedSheet, sheetName]

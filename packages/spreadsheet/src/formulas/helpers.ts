@@ -3,7 +3,11 @@ import {
   tokenVocabulary,
   Token,
 } from "fast-formula-parser/grammar/lexing";
-import { addressToCell, cellToAddress } from "./../constants";
+import {
+  addressToCell,
+  cellToAddress,
+  desanitizeSheetName,
+} from "./../constants";
 import { CellInterface, SelectionArea } from "@rowsncolumns/grid";
 import { FormulaSelection } from "../Grid/Grid";
 import { SheetID } from "../Spreadsheet";
@@ -61,7 +65,7 @@ export const selectionFromCells = (
       right: end.columnIndex,
       bottom: Math.max(start.rowIndex, end.rowIndex),
     },
-    sheet: sheetName,
+    sheet: desanitizeSheetName(sheetName),
   };
 };
 

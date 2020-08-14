@@ -1,9 +1,7 @@
 import { Sheet, CellConfig, Cells } from "./Spreadsheet";
 import {
-  CellDataFormatting,
   BORDER_VARIANT,
   BORDER_STYLE,
-  CellFormatting,
   DataValidation,
   EditorType,
   DataValidationType,
@@ -21,7 +19,6 @@ import {
   castToString,
 } from "@rowsncolumns/grid";
 import SSF from "ssf";
-import { Direction } from "@rowsncolumns/grid";
 
 export const DEFAULT_ROW_COUNT = 1000;
 export const DEFAULT_COLUMN_COUNT = 1000;
@@ -154,7 +151,7 @@ export const format = (
   try {
     if (cellConfig.decimals) {
       let fmt = Array.from({ length: cellConfig.decimals })
-        .map((_, i) => "0")
+        .map((_) => "0")
         .join("");
       value = SSF.format(`#.${fmt}`, num);
     }
@@ -298,7 +295,6 @@ export const luminance = (color: string | undefined, amount: number) => {
 
 /* DPR */
 const dpr = canUseDOM ? window.devicePixelRatio : 1;
-const dprRounded = Math.floor(dpr / 2);
 const dashDotWidth = Math.max(Math.floor(dpr / 2), 0.5);
 export const dotArray =
   dpr === 1 ? [dashDotWidth, dashDotWidth + dpr] : [dashDotWidth, dashDotWidth];
@@ -323,7 +319,6 @@ export const cellsInSelectionVariant = (
       ? dotArray
       : [];
 
-  const dashEnabled = dash.length > 0;
   const lineCap = "butt";
   const cells: Cells = {};
   for (let i = 0; i < selections.length; i++) {
@@ -587,7 +582,7 @@ export const changeDecimals = (format?: string, step = 1) => {
     format.substr(0, decimalIndex) +
     "." +
     Array.from({ length: len })
-      .map((_, i) => "0")
+      .map((_) => "0")
       .join("") +
     suffix
   );
@@ -643,12 +638,26 @@ export const formattingTypeKeys = ([] as string[])
   }, {} as Record<string, boolean>);
 
 /* Sanitize sheet names */
-export const sanitizeSheetName = (name: string | undefined) => {
+export const sanitizeSheetName = (name: React.ReactText | undefined) => {
   if (name === void 0) return void 0;
+  if (typeof name === "number") return name;
   if (name.split(/\s/gi).length > 1) return `'${name}'`;
   return name;
 };
 
+/**
+ * Remove single quotes from sheet name
+ */
+export const desanitizeSheetName = (name: React.ReactText | undefined) => {
+  if (name === void 0) return void 0;
+  if (typeof name === "number") return name;
+  return name.replace(new RegExp(/\'/, "gi"), "");
+};
+
+/**
+ * Check if a string is a formula
+ * @param value
+ */
 export const isAFormula = (value: React.ReactText) => {
   return castToString(value)?.startsWith("=");
 };
