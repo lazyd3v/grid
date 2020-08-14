@@ -1551,9 +1551,9 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
 
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent<HTMLDivElement>) => {
+        onKeyDown?.(e, activeCell, selections);
         eventRefs.current.selectionProps.onKeyDown(e);
         eventRefs.current.editableProps.onKeyDown(e);
-        onKeyDown?.(e, activeCell, selections);
       },
       [getValue, selectedSheet, activeCell, selections]
     );
