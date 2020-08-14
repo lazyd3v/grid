@@ -128,11 +128,6 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       supportedFormulas = [],
       onFormulaChange,
     } = props;
-    const [suggestionToken, setSuggestionToken] = useState<Token>();
-    const [cursorToken, setCursorSuggestionToken] = useState<
-      Point | undefined
-    >();
-    const [target, setTarget] = useState<Token | undefined>();
     const serialize = useCallback(
       (value?: React.ReactText): Node[] => {
         return (castToString(value) ?? "").split("\n").map((line: string) => {
@@ -152,6 +147,12 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
         })
         .join("\n");
     }, []);
+    const [suggestionToken, setSuggestionToken] = useState<Token>();
+    const [cursorToken, setCursorSuggestionToken] = useState<
+      Point | undefined
+    >();
+    const [value, setValue] = useState<Node[]>(() => serialize(initialValue));
+    const [target, setTarget] = useState<Token | undefined>();
 
     const handleUpdateSelection = useCallback(
       (sheetName, sel: SelectionArea | undefined, mode: NewSelectionMode) => {
@@ -193,7 +194,6 @@ const TextEditor: React.FC<EditableProps & RefAttribute> = memo(
       },
       [target]
     );
-    const [value, setValue] = useState<Node[]>(() => serialize(initialValue));
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     const moveToEnd = useCallback(() => {
       ReactEditor.focus(editor);
