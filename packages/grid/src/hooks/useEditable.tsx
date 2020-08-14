@@ -118,7 +118,9 @@ export interface UseEditableOptions {
    */
   selectionRightBound?: number;
   onKeyDown?: (
-    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.KeyboardEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLDivElement
+    >
   ) => void;
   onBeforeEdit?: (coords: CellInterface) => void;
 }

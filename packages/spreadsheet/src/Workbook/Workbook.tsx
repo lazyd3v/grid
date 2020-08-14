@@ -129,6 +129,7 @@ export interface WorkbookProps
   setFormulaMode: (value: boolean) => void;
   isFormulaInputActive?: boolean;
   supportedFormulas?: string[];
+  onEditorKeyDown?: (e: React.KeyboardEvent<any>) => void;
 }
 
 export type WorkBookRefAttribute = {
@@ -199,6 +200,7 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
       setFormulaMode,
       isFormulaInputActive,
       supportedFormulas,
+      onEditorKeyDown,
     } = props;
 
     const { colorMode } = useColorMode();
@@ -423,6 +425,7 @@ const Workbook: React.FC<WorkbookProps & WorkBookRefAttribute> = memo(
             setFormulaMode={setFormulaMode}
             isFormulaInputActive={isFormulaInputActive}
             supportedFormulas={supportedFormulas}
+            onEditorKeyDown={onEditorKeyDown}
           />
         </Flex>
         {showTabStrip || showStatusBar ? (

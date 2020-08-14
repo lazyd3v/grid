@@ -200,6 +200,7 @@ export interface GridProps {
   setFormulaMode: (value: boolean) => void;
   isFormulaInputActive?: boolean;
   supportedFormulas?: string[];
+  onEditorKeyDown?: (e: React.KeyboardEvent<any>) => void;
 }
 
 export interface RowColSelection {
@@ -340,6 +341,7 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       setFormulaMode,
       isFormulaInputActive,
       supportedFormulas = EMPTY_ARRAY,
+      onEditorKeyDown,
     } = props;
 
     const gridRef = useRef<GridRef | null>(null);
@@ -1185,6 +1187,8 @@ const SheetGrid: React.FC<GridProps & RefAttributeGrid> = memo(
       },
       hideOnBlur: isFormulaMode ? !formulaState.showCellSuggestion : true,
       onKeyDown: (e) => {
+        /* Pass it on */
+        onEditorKeyDown?.(e);
         if (
           isFormulaMode &&
           showCellSuggestion &&

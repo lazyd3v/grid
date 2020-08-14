@@ -867,7 +867,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           setSelections(lastSelectionsRef.current);
         }
         /* Focus on the grid */
-        if (enableGlobalKeyHandlers) currentGrid.current?.focus();
+        if (enableGlobalKeyHandlers) focusGrid();
 
         /* Trigger cell change */
         if (patchHasCellChanges(patches) && selectedSheetRef.current) {
@@ -904,7 +904,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         }
 
         /* Focus on the grid */
-        if (enableGlobalKeyHandlers) currentGrid.current?.focus();
+        if (enableGlobalKeyHandlers) focusGrid();
 
         /* Trigger cell change */
         if (patchHasCellChanges(patches) && selectedSheetRef.current) {
@@ -933,6 +933,11 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     const setSelections = useCallback((selections: SelectionArea[] | null) => {
       if (!selections) return;
       currentGrid.current?.setSelections(selections);
+    }, []);
+
+    /* Keep focus on the grid, so it can listen to keydown events */
+    const focusGrid = useCallback(() => {
+      return currentGrid.current?.focus();
     }, []);
 
     /**
@@ -1006,7 +1011,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       });
 
       /* Focus on the new grid */
-      currentGrid.current?.focus();
+      focusGrid();
 
       /* Callback */
       onAddNewSheet?.(newSheet);
@@ -1221,7 +1226,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         onDeleteSheet?.(id);
 
         /* Focus on the new grid */
-        currentGrid.current?.focus();
+        focusGrid();
       },
       [sheets, selectedSheet]
     );
@@ -1447,7 +1452,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         onFill?.(id, activeCell, fillSelection, selections);
 
         /* Focus on the new grid */
-        currentGrid.current?.focus();
+        focusGrid();
 
         /* Trigger Formula */
         cellChangeCallback(id, activeCell, [fillSelection]);
@@ -1794,6 +1799,49 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
       []
     );
 
+    /* Switch to next sheet */
+    const handleMoveToNextSheet = useCallback(() => {
+      dispatch({
+        type: ACTION_TYPE.SELECT_NEXT_SHEET,
+      });
+      /* Focus grid */
+      focusGrid();
+    }, []);
+
+    /* Switch to previos sheet */
+    const handleMoveToPrevSheet = useCallback(() => {
+      dispatch({
+        type: ACTION_TYPE.SELECT_PREV_SHEET,
+      });
+      /* Focus grid */
+      focusGrid();
+    }, []);
+
+    const handleEditorKeyDown = useCallback(
+      (event: React.KeyboardEvent<any>) => {
+        const isMeta = event.metaKey || event.ctrlKey;
+        const isShift = event.shiftKey;
+        const keyCode = event.which;
+        const isAlt = event.altKey;
+        switch (keyCode) {
+          case KeyCodes.Up:
+            if (isAlt) {
+              handleMoveToPrevSheet();
+              event?.preventDefault();
+            }
+            break;
+
+          case KeyCodes.Down:
+            if (isAlt) {
+              handleMoveToNextSheet();
+              event?.preventDefault();
+            }
+            break;
+        }
+      },
+      []
+    );
+
     /**
      * Handle keydown events
      */
@@ -1807,6 +1855,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         const isMeta = event.metaKey || event.ctrlKey;
         const isShift = event.shiftKey;
         const keyCode = event.which;
+        const isAlt = event.altKey;
         switch (keyCode) {
           case KeyCodes.KEY_B:
             if (!isMeta) return;
@@ -1858,6 +1907,20 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
                 : "right";
             handleFormattingChange(FORMATTING_TYPE.HORIZONTAL_ALIGN, align);
             event?.preventDefault();
+            break;
+
+          case KeyCodes.Up:
+            if (isAlt) {
+              handleMoveToPrevSheet();
+              event?.preventDefault();
+            }
+            break;
+
+          case KeyCodes.Down:
+            if (isAlt) {
+              handleMoveToNextSheet();
+              event?.preventDefault();
+            }
             break;
         }
 
@@ -2071,6 +2134,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
             CellRenderer={CellRenderer}
             HeaderCellRenderer={HeaderCellRenderer}
             onChangeSheetName={handleChangeSheetName}
+            onEditorKeyDown={handleEditorKeyDown}
             onDeleteSheet={handleDeleteSheet}
             onDuplicateSheet={handleDuplicateSheet}
             onScroll={handleScroll}

@@ -70,6 +70,8 @@ export interface StateInterface {
 
 export enum ACTION_TYPE {
   SELECT_SHEET = "SELECT_SHEET",
+  SELECT_NEXT_SHEET = "SELECT_NEXT_SHEET",
+  SELECT_PREV_SHEET = "SELECT_PREV_SHEET",
   APPLY_PATCHES = "APPLY_PATCHES",
   CHANGE_SHEET_NAME = "CHANGE_SHEET_NAME",
   NEW_SHEET = "NEW_SHEET",
@@ -110,6 +112,14 @@ export type ActionTypes =
   | {
       type: ACTION_TYPE.SELECT_SHEET;
       id: React.ReactText;
+      undoable?: boolean;
+    }
+  | {
+      type: ACTION_TYPE.SELECT_NEXT_SHEET;
+      undoable?: boolean;
+    }
+  | {
+      type: ACTION_TYPE.SELECT_PREV_SHEET;
       undoable?: boolean;
     }
   | {
@@ -314,6 +324,28 @@ export const createStateReducer = ({
           case ACTION_TYPE.SELECT_SHEET:
             draft.selectedSheet = action.id;
             break;
+
+          case ACTION_TYPE.SELECT_NEXT_SHEET: {
+            const index =
+              draft.sheets.findIndex(
+                (sheet) => sheet.id === draft.selectedSheet
+              ) + 1;
+            const len = draft.sheets.length;
+            const newIndex = index >= len ? 0 : index;
+            draft.selectedSheet = draft.sheets[newIndex].id;
+            break;
+          }
+
+          case ACTION_TYPE.SELECT_PREV_SHEET: {
+            const index =
+              draft.sheets.findIndex(
+                (sheet) => sheet.id === draft.selectedSheet
+              ) - 1;
+            const len = draft.sheets.length;
+            const newIndex = index < 0 ? len - 1 : index;
+            draft.selectedSheet = draft.sheets[newIndex].id;
+            break;
+          }
 
           case ACTION_TYPE.CHANGE_SHEET_NAME: {
             const sheet = draft.sheets.find((sheet) => sheet.id === action.id);

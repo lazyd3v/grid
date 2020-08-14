@@ -304,6 +304,13 @@ const initialValidationSheet: Sheet[] = [
       },
     },
   },
+  {
+    name: "Sheet 2",
+    id: 2,
+    activeCell: null,
+    selections: [],
+    cells: {},
+  },
 ];
 export const DataValidation = () => {
   const App = () => {
