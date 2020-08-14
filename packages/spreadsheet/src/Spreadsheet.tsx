@@ -1492,7 +1492,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
         };
         const cellChanges: Cells = {};
 
-        requestAnimationFrame(async () => {
+        requestAnimationFrame(() => {
           for (let i = 0; i < sel.length; i++) {
             const { bounds } = sel[i];
             for (
