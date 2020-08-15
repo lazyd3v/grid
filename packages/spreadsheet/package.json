@@ -23,6 +23,7 @@
     "@rowsncolumns/calc": "^3.0.3",
     "@rowsncolumns/grid": "^6.0.5",
     "@types/lodash.isequal": "^4.5.5",
+    "@types/react-color": "^3.0.4",
     "@types/react-list": "^0.8.5",
     "@types/webfontloader": "^1.6.32",
     "babel-plugin-emotion": "^10.0.33",
