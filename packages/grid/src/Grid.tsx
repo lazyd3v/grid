@@ -44,6 +44,7 @@ import { createCanvasBox, createHTMLBox } from "./utils";
 import invariant from "tiny-invariant";
 import { StageConfig } from "konva/types/Stage";
 import { Direction } from "./types";
+import Konva from "konva";
 
 export interface GridProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onScroll"> {
@@ -370,7 +371,7 @@ export interface PosXYRequired {
 export type GridRef = {
   scrollTo: (scrollPosition: ScrollCoords) => void;
   scrollBy: (pos: PosXY) => void;
-  stage: Stage | null;
+  stage: Konva.Stage | null;
   container: HTMLDivElement | null;
   resetAfterIndices: (
     coords: OptionalCellInterface,
@@ -546,7 +547,7 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
       recalcColumnIndices: [],
       recalcRowIndices: [],
     });
-    const stageRef = useRef<Stage | null>(null);
+    const stageRef = useRef<Konva.Stage>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const verticalScrollRef = useRef<HTMLDivElement>(null);
     const wheelingRef = useRef<number | null>(null);
@@ -1022,7 +1023,7 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
           columnCount,
           instanceProps: instanceProps.current,
           offset: rowOffset,
-          scale
+          scale,
         });
         const columnIndex = getColumnStartIndexForOffset({
           rowHeight,
@@ -1031,7 +1032,7 @@ const Grid: React.FC<GridProps & RefAttribute> = memo(
           columnCount,
           instanceProps: instanceProps.current,
           offset: columnOffset,
-          scale
+          scale,
         });
         /* To be compatible with merged cells */
         const bounds = getCellBounds({ rowIndex, columnIndex });

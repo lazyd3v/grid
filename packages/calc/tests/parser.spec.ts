@@ -4,7 +4,7 @@ import { CellConfig } from "../src/types";
 
 describe("parser", () => {
   let formulaParser: FormulaParser;
-  let baseParser: FastFormulaParser;
+  // let baseParser: FastFormulaParser;
   let position = { sheet: "Sheet1", row: 1, col: 1 };
   let getMinMaxRows = () => [0, 100];
   let getMinMaxColumns = () => [0, 100];
@@ -17,10 +17,12 @@ describe("parser", () => {
   beforeEach(() => {
     formulaParser = new FormulaParser({
       getValue,
-      rowCount: 100,
-      columnCount: 100,
-      getMinMaxRows,
-      getMinMaxColumns,
+      getSheetRange: () => {
+        return {
+          rowCount: 100,
+          columnCount: 100,
+        };
+      },
     });
     // baseParser = new FastFormulaParser({
     //   onCell: ref => null
@@ -61,10 +63,12 @@ describe("parser", () => {
           return "hello";
         },
       },
-      rowCount: 100,
-      columnCount: 100,
-      getMinMaxRows,
-      getMinMaxColumns,
+      getSheetRange: () => {
+        return {
+          rowCount: 100,
+          columnCount: 100,
+        };
+      },
     });
     const result = await asyncParser.parse("SUMMER()");
     expect(result.result).toBe("hello");
@@ -79,10 +83,12 @@ describe("parser", () => {
     };
     const customParser = new FormulaParser({
       functions: fns,
-      rowCount: 100,
-      columnCount: 100,
-      getMinMaxRows,
-      getMinMaxColumns,
+      getSheetRange: () => {
+        return {
+          rowCount: 100,
+          columnCount: 100,
+        };
+      },
     });
     const result = await customParser.parse("FOO()");
     expect(result.result).toBe("bar");

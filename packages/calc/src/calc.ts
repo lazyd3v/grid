@@ -6,6 +6,7 @@ import {
   Functions,
   ParseResults,
   CellPosition,
+  SheetConfig,
 } from "./parser";
 import { Dag, Node, DependencyMapping } from "./graph";
 import {
@@ -30,10 +31,7 @@ type Cell = Record<string, CellConfig>;
 
 export interface CalcEngineOptions {
   functions?: Functions;
-  rowCount: number;
-  columnCount: number;
-  getMinMaxRows: (id: Sheet) => number[];
-  getMinMaxColumns: (id: Sheet, rowIndex: number) => number[];
+  getSheetRange: (name: Sheet) => SheetConfig;
 }
 
 /**
@@ -170,12 +168,15 @@ class CalcEngine {
      */
     for (const dep of dependencies) {
       if ((dep as CellRange).from) {
-        const { from, to, sheet } = this.restrictRowRange(dep as CellRange);
+        const { rowCount, columnCount } = this.parser.sheetRange(dep.sheet);
+        const { from, to, sheet } = this.restrictRowRange(
+          dep as CellRange,
+          rowCount
+        );
         for (let i = from.row; i <= to.row; i++) {
-          const [minCols, maxCols] = this.restrictColumnRange(sheet, i);
           for (
-            let j = Math.max(from.col, minCols);
-            j <= Math.min(to.col, maxCols);
+            let j = Math.min(from.col, columnCount);
+            j <= Math.min(to.col, columnCount);
             j++
           ) {
             const curCell = { rowIndex: i, columnIndex: j };
@@ -255,23 +256,18 @@ class CalcEngine {
     return false;
   };
 
-  restrictRowRange = (ref: CellRange) => {
-    const [minRows, maxRows] = this.parser.getMinMaxRows(ref.sheet);
+  restrictRowRange = (ref: CellRange, rowCount: number) => {
     return {
       ...ref,
       from: {
         ...ref.from,
-        row: Math.max(ref.from.row, minRows),
+        row: Math.min(ref.from.row, rowCount),
       },
       to: {
         ...ref.to,
-        row: Math.min(ref.to.row, maxRows),
+        row: Math.min(ref.to.row, rowCount),
       },
     };
-  };
-
-  restrictColumnRange = (id: Sheet, rowIndex: number) => {
-    return this.parser.getMinMaxColumns(id, rowIndex);
   };
 
   prepareOutput = (changes: CellsBySheet) => {
@@ -461,17 +457,17 @@ class CalcEngine {
               const dependents = this.parser.getDependencies(formula, position);
               for (const dep of dependents) {
                 if ((dep as CellRange).from) {
+                  const { rowCount, columnCount } = this.parser.sheetRange(
+                    dep.sheet
+                  );
                   const { from, to, sheet } = this.restrictRowRange(
-                    dep as CellRange
+                    dep as CellRange,
+                    rowCount
                   );
                   for (let i = from.row; i <= to.row; i++) {
-                    const [minCols, maxCols] = this.restrictColumnRange(
-                      sheet,
-                      i
-                    );
                     for (
-                      let j = Math.max(from.col, minCols);
-                      j <= Math.min(to.col, maxCols);
+                      let j = Math.min(from.col, columnCount);
+                      j <= Math.min(to.col, columnCount);
                       j++
                     ) {
                       const cell = { rowIndex: i, columnIndex: j };

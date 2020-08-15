@@ -804,16 +804,27 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     );
 
     /**
+     * Get properties of a sheet
+     */
+    const getSheetRange = useCallback(
+      (name: SheetID) => {
+        const sheet = sheetsByName[name];
+        return {
+          rowCount: sheet.rowCount ?? DEFAULT_ROW_COUNT,
+          columnCount: sheet.columnCount ?? DEFAULT_COLUMN_COUNT,
+        };
+      },
+      [sheetsByName]
+    );
+
+    /**
      * Calculation
      */
 
     const { initializeEngine, onCalculateBatch, supportedFormulas } = useCalc({
       formulas,
-      rowCount: currentSheet.rowCount ?? DEFAULT_ROW_COUNT,
-      columnCount: currentSheet.columnCount ?? DEFAULT_COLUMN_COUNT,
-      getMinMaxRows,
-      getMinMaxColumns,
       getCellConfig: getCellConfigBySheetNameRef,
+      getSheetRange,
     });
 
     /**

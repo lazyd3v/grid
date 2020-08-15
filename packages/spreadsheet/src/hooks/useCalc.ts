@@ -13,24 +13,23 @@ import {
 } from "./../Spreadsheet";
 import { formulas as defaultFormulas } from "../formulas";
 
+export interface SheetConfig {
+  rowCount: number;
+  columnCount: number;
+}
+
 export interface UseCalcOptions {
   formulas?: FormulaMap;
   getCellConfig: React.MutableRefObject<
     CellConfigBySheetNameGetter | undefined
   >;
-  rowCount: number;
-  columnCount: number;
-  getMinMaxRows: (id: SheetID) => number[];
-  getMinMaxColumns: (id: SheetID, rowIndex: number) => number[];
+  getSheetRange: (name: SheetID) => SheetConfig;
 }
 
 const useCalc = ({
   formulas,
   getCellConfig,
-  rowCount,
-  columnCount,
-  getMinMaxRows,
-  getMinMaxColumns,
+  getSheetRange,
 }: UseCalcOptions) => {
   const engine = useRef<CalcEngine>();
   useEffect(() => {
@@ -39,27 +38,16 @@ const useCalc = ({
         ...defaultFormulas,
         ...formulas,
       },
-      rowCount,
-      columnCount,
-      getMinMaxRows,
-      getMinMaxColumns,
+      getSheetRange,
     });
   }, []);
-
-  /**
-   * Keep row and column count in syncc
-   */
-  useEffect(() => {
-    engine.current?.parser.updateRowColumnCount(rowCount, columnCount);
-  }, [rowCount, columnCount]);
 
   useEffect(() => {
     if (!engine.current) {
       return;
     }
-    engine.current.parser.getMinMaxRows = getMinMaxRows;
-    engine.current.parser.getMinMaxColumns = getMinMaxColumns;
-  }, [getMinMaxRows, getMinMaxColumns]);
+    engine.current.parser.getSheetRange = getSheetRange;
+  }, [getSheetRange]);
 
   const onCalculate = useCallback(
     (

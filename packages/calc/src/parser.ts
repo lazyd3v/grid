@@ -47,12 +47,14 @@ export type GetValue = (sheet: Sheet, cell: CellInterface) => CellConfig;
 export type Functions = Record<string, (...args: any[]) => any>;
 
 export interface FormulaProps {
+  getSheetRange: (name: Sheet) => SheetConfig;
   getValue?: CellConfigGetter | undefined;
   functions?: Functions;
+}
+
+export interface SheetConfig {
   rowCount: number;
   columnCount: number;
-  getMinMaxRows: (id: Sheet) => number[];
-  getMinMaxColumns: (id: Sheet, rowIndex: number) => number[];
 }
 
 function extractIfJSON(str: string) {
@@ -73,25 +75,13 @@ class FormulaParser {
   dependencyParser: DepParser;
   getValue: CellConfigGetter | undefined;
   currentValues: CellsBySheet | undefined;
-  columnCount!: number;
-  rowCount!: number;
-  minMaxRowGetter!: (id: string) => number[];
-  minMaxColumnGetter!: (id: string, rowIndex: number) => number[];
+  getSheetRange!: (name: string) => SheetConfig;
   constructor(options: FormulaProps) {
     if (options.getValue) {
       this.getValue = options.getValue;
     }
-    if (options.rowCount) {
-      this.rowCount = options.rowCount;
-    }
-    if (options.columnCount) {
-      this.columnCount = options.columnCount;
-    }
-    if (options.getMinMaxRows) {
-      this.minMaxRowGetter = options.getMinMaxRows;
-    }
-    if (options.getMinMaxColumns) {
-      this.minMaxColumnGetter = options.getMinMaxColumns;
+    if (options.getSheetRange) {
+      this.getSheetRange = options.getSheetRange;
     }
     this.formulaParser = new FastFormulaParser({
       functions: options?.functions,
@@ -101,17 +91,8 @@ class FormulaParser {
     this.dependencyParser = new DepParser();
   }
 
-  getMinMaxRows(id: Sheet) {
-    return this.minMaxRowGetter(id);
-  }
-
-  getMinMaxColumns(id: Sheet, rowIndex: number) {
-    return this.minMaxColumnGetter(id, rowIndex);
-  }
-
-  updateRowColumnCount(rowCount: number, columnCount: number) {
-    this.rowCount = rowCount;
-    this.columnCount = columnCount;
+  sheetRange(name: Sheet) {
+    return this.getSheetRange(name);
   }
 
   cacheValues = (changes: CellsBySheet) => {
@@ -125,8 +106,8 @@ class FormulaParser {
   getCellConfig = (position: CellPosition) => {
     const sheet = position.sheet;
     const cell = {
-      rowIndex: Math.min(position.row, this.rowCount),
-      columnIndex: Math.min(position.col, this.columnCount),
+      rowIndex: position.row,
+      columnIndex: position.col,
     };
     const config =
       this.currentValues?.[position.sheet]?.[position.row]?.[position.col] ??
@@ -149,16 +130,19 @@ class FormulaParser {
 
   getRangeValue = (ref: CellRange) => {
     const arr = [];
-    const [minRows, maxRows] = this.getMinMaxRows(ref.sheet);
-    const rowFrom = Math.max(ref.from.row, minRows);
-    const rowTo = Math.min(ref.to.row, maxRows);
-
-    for (let row = rowFrom; row <= rowTo; row++) {
+    // Restrict ranges to max row and column count
+    const { rowCount, columnCount } = this.sheetRange(ref.sheet);
+    for (
+      let row = Math.min(ref.from.row, rowCount);
+      row <= Math.min(ref.to.row, rowCount);
+      row++
+    ) {
       const innerArr = [];
-      const [minCols, maxCols] = this.getMinMaxColumns(ref.sheet, row);
-      const colFrom = Math.max(ref.from.col, minCols);
-      const colTo = Math.min(ref.to.col, maxCols);
-      for (let col = colFrom; col <= colTo; col++) {
+      for (
+        let col = Math.min(ref.from.col, columnCount);
+        col <= Math.min(ref.to.col, columnCount);
+        col++
+      ) {
         innerArr.push(this.getCellValue({ sheet: ref.sheet, row, col }));
       }
       arr.push(innerArr);

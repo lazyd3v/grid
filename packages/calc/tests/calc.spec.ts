@@ -7,8 +7,12 @@ describe("Calc Engine", () => {
   let engine: CalcEngine;
   beforeEach(() => {
     engine = new CalcEngine({
-      rowCount: 100,
-      columnCount: 100,
+      getSheetRange: () => {
+        return {
+          rowCount: 100,
+          columnCount: 100,
+        };
+      },
     });
   });
   it("exists", () => {
