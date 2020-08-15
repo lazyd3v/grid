@@ -8,7 +8,6 @@ import Grid, {
 } from "@rowsncolumns/grid";
 import { useMeasure } from "react-use";
 import { Rect, Text, Group, RegularPolygon } from "react-konva";
-import { number } from "@storybook/addon-knobs";
 
 export default {
   title: "Treetable",
