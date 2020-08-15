@@ -1,4 +1,5 @@
 import FormulaError from "fast-formula-parser/formulas/error";
+import { FormulaParser } from "@rowsncolumns/calc";
 
 export interface FunctionArgument {
   value: string | number;
@@ -6,7 +7,10 @@ export interface FunctionArgument {
   isRangeRef: boolean;
   isCellRef: boolean;
 }
-export function importData(arg: FunctionArgument | undefined) {
+export function importData(
+  parser: FormulaParser,
+  arg: FunctionArgument | undefined
+) {
   if (!arg || !arg.value)
     throw new FormulaError("#N/A", "Wrong number of arguments provided.");
   const { value } = arg;
@@ -33,14 +37,15 @@ export function importData(arg: FunctionArgument | undefined) {
     });
 }
 
-export function min(...arg: FunctionArgument[]) {
+export function min(parser: FormulaParser, ...arg: FunctionArgument[]) {
   return Math.min(...arg.map((item) => Number(item.value)));
 }
-export function max(...arg: FunctionArgument[]) {
+export function max(parser: FormulaParser, ...arg: FunctionArgument[]) {
   return Math.max(...arg.map((item) => Number(item.value)));
 }
 
 export function hyperLink(
+  parser: FormulaParser,
   urlArg: FunctionArgument,
   titleArg: FunctionArgument
 ) {

@@ -3,6 +3,7 @@ id: formula
 title: Formula (beta)
 ---
 import SpreadSheet, { FormulaError } from "@rowsncolumns/spreadsheet"
+import { FormulaParser } from '@rowsncolumns/calc'
 
 Formula support is now in beta. We have added a new Calculation Engine for SpreadSheet Grid. Calculations are always async and is an independent module.
 
@@ -12,7 +13,7 @@ A simple formula to add `+1` to any number
 
 ```jsx
 const formulas = {
-  'PLUS_ONE': (arg: FunctionArgument) => {
+  'PLUS_ONE': (parser: FormulaParser, arg: FunctionArgument) => {
     if (!arg) {
       return new FormulaError('#NA', 'Wrong number of arguments')
     }
@@ -35,7 +36,7 @@ Enter `=PLUS_ONE(12)`
 
 export const App = () => {
   const formulas = {
-    'PLUS_ONE': (arg) => {
+    'PLUS_ONE': (parser, arg) => {
       if (!arg) {
         return new FormulaError('#NA', 'Wrong number of arguments')
       }
@@ -57,7 +58,7 @@ export const App = () => {
 
 ```jsx
 const formulas = {
-  'FETCH_USER_INFO': (arg: FunctionArgument) => {
+  'FETCH_USER_INFO': (parser, arg: FunctionArgument) => {
     if (!arg) {
       return new FormulaError('#NA', 'Wrong number of arguments')
     }

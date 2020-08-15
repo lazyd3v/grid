@@ -84,7 +84,7 @@ class FormulaParser {
       this.getSheetRange = options.getSheetRange;
     }
     this.formulaParser = new FastFormulaParser({
-      functions: options?.functions,
+      functionsNeedContext: options?.functions ?? {},
       onCell: this.getCellValue,
       onRange: this.getRangeValue,
     });
@@ -217,4 +217,4 @@ class FormulaParser {
   };
 }
 
-export { FormulaParser };
+export { FormulaParser, FastFormulaParser };

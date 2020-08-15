@@ -6,7 +6,7 @@ import Spreadsheet, {
   DATATYPES,
 } from "@rowsncolumns/spreadsheet";
 import { parse, download } from "@rowsncolumns/export";
-import CalcEngine from "@rowsncolumns/calc";
+import CalcEngine, { FormulaParser } from "@rowsncolumns/calc";
 
 export default {
   title: "Spreadsheet",
@@ -517,7 +517,7 @@ export const Formula = () => {
         onChange={setSheets}
         onChangeCells={console.log}
         formulas={{
-          FETCH_CSV: async (arg) => {
+          FETCH_CSV: async (parser: FormulaParser, arg) => {
             return fetch(arg.value)
               .then((r) => r.text())
               .then((response) => {
