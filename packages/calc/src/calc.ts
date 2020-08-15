@@ -360,6 +360,7 @@ class CalcEngine {
       if (formula === null) {
         continue;
       }
+
       const result = await this.parser.parse(formula, position, getValue);
 
       /* Check collision in dependencies */
@@ -385,7 +386,6 @@ class CalcEngine {
   };
 
   calculateBatch = async (
-    sheet: Sheet,
     changes: CellsBySheet,
     getValue: CellConfigGetter
   ) => {
@@ -397,17 +397,18 @@ class CalcEngine {
             rowIndex: Number(rowIndex),
             columnIndex: Number(columnIndex),
           };
-          const config = getValue(sheet, cell);
+          const config =
+            getValue(sheet, cell) ?? changes[sheet][rowIndex][columnIndex];
           if (config === void 0) {
             continue;
           }
-          const changes = await this.calculate(
+          const results = await this.calculate(
             castToString(config?.text),
             sheet,
             cell,
             getValue
           );
-          merge(values, changes);
+          merge(values, results);
         }
       }
     }

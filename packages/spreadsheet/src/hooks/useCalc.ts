@@ -67,13 +67,11 @@ const useCalc = ({
     []
   );
 
-  const onCalculateBatch = useCallback((sheet: SheetID, changes: CellsBySheet):
+  const onCalculateBatch = useCallback((changes: CellsBySheet):
     | Promise<CellsBySheet | undefined>
     | undefined => {
-    const sheetId = castToString(sheet);
-    if (!sheetId || !getCellConfig?.current) return;
+    if (!getCellConfig?.current) return;
     return engine.current?.calculateBatch(
-      sheetId,
       changes as Partial<CellConfig>,
       getCellConfig.current as CalcCellConfigGetter
     );

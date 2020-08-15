@@ -7,7 +7,7 @@ import Spreadsheet, {
 } from "@rowsncolumns/spreadsheet";
 import { parse, download } from "@rowsncolumns/export";
 import CalcEngine, { FormulaParser } from "@rowsncolumns/calc";
-import { produce } from "immer";
+import { produce, applyPatches } from "immer";
 
 export default {
   title: "Spreadsheet",
@@ -545,8 +545,8 @@ interface TickInterface {
 }
 
 const generateRandomData = () => {
-  return Array.from({ length: 20 }).map((_, i) => {
-    return Array.from({ length: 10 }).map(
+  return Array.from({ length: 5 }).map((_, i) => {
+    return Array.from({ length: 5 }).map(
       (_, j) => Math.floor(Math.random() * 99) + 1
     );
   });
@@ -554,6 +554,7 @@ const generateRandomData = () => {
 
 export const TickingFormula = () => {
   const App = () => {
+    const gridRef = React.useRef(null);
     const [sheets, setSheets] = useState(defaultSheets);
     const [ticker, setTicker] = useState<TickInterface>(null);
     useEffect(() => {
@@ -561,9 +562,20 @@ export const TickingFormula = () => {
       if (ticker) {
         interval = setInterval(() => {
           const newData = generateRandomData();
+          const { row: parentRow, col: parentCol, sheet } = ticker;
+          const changes = { [sheet]: {} };
+          for (let i = 0; i < newData.length; i++) {
+            changes[sheet][i + parentRow] = changes[sheet][i + parentRow] ?? {};
+            for (let j = 0; j < newData[i].length; j++) {
+              if (i === 0 && j === 0) {
+                continue;
+              }
+              changes[sheet][i + parentRow][j + parentCol] =
+                changes[sheet][i + parentRow][j + parentCol] ?? {};
+            }
+          }
           setSheets((sheets) => {
             return produce(sheets, (draft) => {
-              const { row: parentRow, col: parentCol } = ticker;
               const sheet = draft.find((sheet) => sheet.name === ticker.sheet);
               if (sheet) {
                 for (let i = 0; i < newData.length; i++) {
@@ -596,6 +608,12 @@ export const TickingFormula = () => {
               }
             });
           });
+          gridRef.current.onCalculate?.(changes).then((results) => {
+            gridRef.current.dispatch({
+              type: "UPDATE_CELLS",
+              changes: results,
+            });
+          });
         }, 1000);
       }
       return () => {
@@ -606,6 +624,7 @@ export const TickingFormula = () => {
       <Spreadsheet
         minHeight={600}
         sheets={sheets}
+        ref={gridRef}
         onChange={setSheets}
         formulas={{
           TICK: async (context) => {

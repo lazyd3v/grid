@@ -480,6 +480,9 @@ export type SheetGridRef = {
   redo: () => void;
   undo: () => void;
   dispatch: (action: ActionTypes) => void;
+  onCalculate: (
+    changes: CellsBySheet
+  ) => Promise<CellsBySheet | undefined> | undefined;
 };
 
 export interface PatchInterface {
@@ -597,9 +600,11 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     /* Useful for tests to handle debounced state updates */
     const isMounted = useRef<boolean>(false);
     const currentStateRef = useRef<StateInterface>();
-    const state: StateInterface = isControlled
-      ? { ...valueState, sheets: sheetsProp as Sheet[] }
-      : valueState;
+    const state: StateInterface = useMemo(() => {
+      return isControlled
+        ? { ...valueState, sheets: sheetsProp as Sheet[] }
+        : valueState;
+    }, [isControlled, valueState, sheetsProp]);
     const { sheets, currentActiveCell, currentSelections } = state;
 
     const [sheetsById, sheetsByName] = useMemo(() => {
@@ -642,10 +647,13 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
     useEffect(() => {
       if (!isControlled) {
         onChange?.(state.sheets);
-      } else {
-        currentStateRef.current = state;
       }
     }, [state, isControlled]);
+
+    /* Keep controlled state in sync */
+    if (isControlled) {
+      currentStateRef.current = state;
+    }
 
     /**
      * State reducer
@@ -1004,6 +1012,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
           undo,
           redo,
           dispatch,
+          onCalculate: onCalculateBatch,
         };
       },
       []
@@ -1062,7 +1071,7 @@ const Spreadsheet: React.FC<SpreadSheetProps & RefAttributeSheetGrid> = memo(
             loadingShown = true;
           }, LOADING_INDICATOR_DELAY);
         }
-        const values = await onCalculateBatch?.(sheet, changes);
+        const values = await onCalculateBatch?.(changes);
 
         /* Set flag to true so dont show loading indicator */
         receivedResponse = true;
