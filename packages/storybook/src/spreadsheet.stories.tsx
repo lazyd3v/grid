@@ -574,6 +574,13 @@ export const TickingFormula = () => {
                     sheet.cells[row][col] = sheet.cells[row][col] ?? {};
 
                     if (row === parentRow && col === parentCol) {
+                      /**
+                       * User has deleted the parent cell
+                       * Another way is to listen to onDeleteCells and disconnect
+                       */
+                      if (sheet.cells[row][col].text === void 0) {
+                        return clearInterval(interval);
+                      }
                       sheet.cells[row][col].result = newData[i][j];
                       sheet.cells[row][col].resultType = "number";
                       sheet.cells[row][col].formulaRange = [
