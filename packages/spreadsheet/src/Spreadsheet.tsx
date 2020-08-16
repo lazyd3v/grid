@@ -61,12 +61,7 @@ import Editor, { CustomEditorProps } from "./Editor/Editor";
 import StatusBarComponent from "./StatusBar";
 import { StatusBarProps } from "./StatusBar/StatusBar";
 import useFonts from "./hooks/useFonts";
-import {
-  createStateReducer,
-  ACTION_TYPE,
-  StateInterface,
-  ActionTypes,
-} from "./state";
+import { createStateReducer, ACTION_TYPE, ActionTypes } from "./state";
 import { Patch, applyPatches } from "immer";
 import { ContextMenuComponentProps } from "./ContextMenu/ContextMenu";
 import ContextMenuComponent from "./ContextMenu";
@@ -488,6 +483,13 @@ export type SheetGridRef = {
 export interface PatchInterface {
   patches: Patch;
   inversePatches: Patch;
+}
+
+export interface StateInterface {
+  selectedSheet: React.ReactText | undefined;
+  sheets: Sheet[];
+  currentActiveCell?: CellInterface | null;
+  currentSelections?: SelectionArea[] | null;
 }
 
 export const initialState: StateInterface = {

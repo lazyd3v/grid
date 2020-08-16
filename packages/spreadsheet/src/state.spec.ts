@@ -1,10 +1,5 @@
-import {
-  createStateReducer,
-  ACTION_TYPE,
-  StateInterface,
-  ActionTypes,
-} from "./state";
-import { initialState } from "./Spreadsheet";
+import { createStateReducer, ACTION_TYPE, ActionTypes } from "./state";
+import { initialState, StateInterface } from "./Spreadsheet";
 import { createNewSheet } from ".";
 import { CellsBySheet } from "@rowsncolumns/calc/dist/calc";
 

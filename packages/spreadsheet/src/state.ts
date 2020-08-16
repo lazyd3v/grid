@@ -8,7 +8,13 @@ import {
   formattingTypeKeys,
   detectDataType,
 } from "./constants";
-import { Sheet, SheetID, CellConfig, CellsBySheet } from "./Spreadsheet";
+import {
+  Sheet,
+  SheetID,
+  CellConfig,
+  CellsBySheet,
+  StateInterface,
+} from "./Spreadsheet";
 import {
   PatchInterface,
   CellInterface,
@@ -60,13 +66,6 @@ export const defaultSheets: Sheet[] = [
     filterViews: [],
   },
 ];
-
-export interface StateInterface {
-  selectedSheet: React.ReactText | undefined;
-  sheets: Sheet[];
-  currentActiveCell?: CellInterface | null;
-  currentSelections?: SelectionArea[] | null;
-}
 
 export enum ACTION_TYPE {
   SELECT_SHEET = "SELECT_SHEET",
